@@ -1,248 +1,363 @@
 /* src/services/flujo.service.js */
+
 const { cotizar } = require("./cotizador.service");
 const { guardarPedidoConfirmado, obtenerPedidosPorCliente } = require("./pedidos.repository");
+const { enviarTexto, reenviarImagenConCaption } = require("./whatsapp.service");
 
+const VEINTICUATRO_HORAS = 24 * 60 * 60 * 1000;
 const sesiones = new Map();
-const TIEMPO_EXPIRACION = 60 * 60 * 1000;
 
-const palabrasClaveSaludo = [
-    "hola", "hi", "hello", "hey",
-    "buen día", "buenos días",
-    "buenas tardes", "buenas noches",
-    "qué tal", "que tal",
-    "cómo estás", "como estas",
-    "saludos", "qué onda", "que onda",
-    "buen dia", "buenos dias",
-    "¿qué tal?", "¿que tal?",
-    "¿cómo estás?", "¿como estas?"
-];
+/**
+ * 🔐 Cleanup expired sessions every hour
+ */
+setInterval(() => {
+  const ahora = Date.now();
+  for (const [key, value] of sesiones.entries()) {
+    if (!value?.ultimaInteraccion) continue;
 
-const palabrasClaveIntencion = [
-    "cotizar", "cotización", "precio", "cuánto cuesta",
-    "cuanto cuesta", "envío", "envios", "paquetería",
-    "paqueteria", "guía", "guia", "costo"
-];
+    if (ahora - value.ultimaInteraccion > VEINTICUATRO_HORAS) {
+      sesiones.delete(key);
+    }
+  }
+}, 60 * 60 * 1000);
 
-function esSaludo(texto) {
-    return palabrasClaveSaludo.some(p => texto.includes(p));
-}
+/**
+ * Procesar mensaje principal
+ */
+async function procesarMensaje(clienteId, mensaje, tipoMensaje = "text", mediaId = null) {
 
-function esIntencionCotizar(texto) {
-    return palabrasClaveIntencion.some(p => texto.includes(p));
-}
+  try {
 
-function iniciarSesion(clienteId) {
-    sesiones.set(clienteId, {
-        step: "LARGO",
-        data: {},
-        lastActivity: Date.now()
-    });
-}
+    mensaje = mensaje?.trim?.() || "";
+    const ahora = Date.now();
 
-function obtenerSesion(clienteId) {
-    const sesion = sesiones.get(clienteId);
-    if (!sesion) return null;
+    let sesion = sesiones.get(clienteId);
 
-    if (Date.now() - sesion.lastActivity > TIEMPO_EXPIRACION) {
+    // ===============================
+    // CREAR SESIÓN SI NO EXISTE
+    // ===============================
+    if (!sesion) {
+      sesion = {
+        estado: "MENU",
+        ultimaInteraccion: ahora
+      };
+      sesiones.set(clienteId, sesion);
+
+      return {
+        tipo: "texto",
+        mensaje:
+`👋 Hola, bienvenido a *AHSE Paquetería*.
+
+Estoy listo para ayudarte con tu envío.
+
+Selecciona una opción:
+
+1️⃣ Cotizar envío
+2️⃣ Rastrear guía
+3️⃣ Hablar con asesor`
+      };
+    }
+
+    const fueraDeVentana = (ahora - sesion.ultimaInteraccion) > VEINTICUATRO_HORAS;
+    sesion.ultimaInteraccion = ahora;
+
+    if (fueraDeVentana) {
+      sesion.estado = "MENU";
+      return { tipo: "plantilla", nombre: "menu_atencion_cliente" };
+    }
+
+    if (["hola", "menu", "inicio"].includes(mensaje.toLowerCase())) {
+      sesion.estado = "MENU";
+      return responderMenu();
+    }
+
+    // ===============================
+    // ESPERANDO COMPROBANTE
+    // ===============================
+    if (sesion.estado === "ESPERANDO_COMPROBANTE") {
+
+      if (tipoMensaje === "image" && mediaId) {
+
+        if (!process.env.NUMERO_OPERADOR) {
+          throw new Error("NUMERO_OPERADOR not configured");
+        }
+
+        await enviarTexto(
+          process.env.NUMERO_OPERADOR,
+`📸 *COMPROBANTE RECIBIDO*
+
+🧾 Folio: ${sesion.folioPendiente}
+👤 Cliente: ${clienteId}
+
+Adjunto comprobante enviado por el cliente:`
+        );
+
+        await reenviarImagenConCaption(
+          process.env.NUMERO_OPERADOR,
+          mediaId,
+          `Comprobante de ${clienteId}`
+        );
+
         sesiones.delete(clienteId);
-        return "EXPIRADA";
+
+        return {
+          tipo: "texto",
+          mensaje:
+`✅ Hemos recibido tu comprobante.
+
+En breve validaremos el pago y procederemos a generar tu guía.`
+        };
+      }
+
+      return {
+        tipo: "texto",
+        mensaje:
+`⚠️ Estamos esperando tu comprobante de pago.
+
+Por favor envía la imagen del comprobante para continuar.`
+      };
     }
 
-    return sesion;
-}
+    // ===============================
+    // MENU
+    // ===============================
+    if (sesion.estado === "MENU") {
 
-function actualizarActividad(clienteId) {
-    const sesion = sesiones.get(clienteId);
-    if (sesion) sesion.lastActivity = Date.now();
-}
+      if (mensaje.includes("1") || mensaje.toLowerCase().includes("cotizar")) {
+        sesion.estado = "ESPERANDO_FORMATO";
 
-function eliminarSesion(clienteId) {
-    sesiones.delete(clienteId);
-}
+        return {
+          tipo: "texto",
+          mensaje:
+`📦 *FORMATO DE DATOS*
+Copia y rellena este mensaje:
 
-function validarNumero(valor) {
-    const n = parseFloat(valor);
-    return !isNaN(n) && n > 0 ? n : null;
-}
+*ORIGEN*
+Nombre Origen:
+Calle y Número Origen:
+Colonia Origen:
+Ciudad y Estado Origen:
+CP Origen:
+Cel Origen:
 
-async function procesarMensaje(clienteId, mensaje) {
+*DESTINO*
+Nombre Destino:
+Calle y Número Destino:
+Colonia Destino:
+Ciudad y Estado Destino:
+CP Destino:
+Cel Destino:
 
-    mensaje = mensaje.trim().toLowerCase();
+*PAQUETE*
+Medidas (LxAxA):
+Peso (kg):
+Contenido:`
+        };
+      }
 
-    if (mensaje === "cancelar") {
-        eliminarSesion(clienteId);
-        return "❌ Proceso cancelado.\nEscribe un saludo para iniciar nuevamente.";
-    }
-
-    if (mensaje === "mis pedidos") {
+      if (mensaje.includes("2") || mensaje.toLowerCase().includes("rastrear")) {
         const pedidos = await obtenerPedidosPorCliente(clienteId);
 
-        if (!pedidos.length) {
-            return "No tienes pedidos registrados.";
+        if (!pedidos?.length) {
+          return { tipo: "texto", mensaje: "No tienes pedidos recientes." };
         }
 
-        let respuesta = "📦 *Tus últimos pedidos:*\n\n";
-
-        pedidos.forEach((p, i) => {
-            respuesta +=
-                `#${i + 1}\n` +
-                `🧾 ${p[0]}\n` +
-                `📅 ${p[1]}\n` +
-                `🚚 ${p[8]}\n` +
-                `💰 $${p[9]}\n` +
-                `📌 Estado: ${p[10]}\n\n`;
+        let txt = "🔎 *Tus últimos pedidos:*";
+        pedidos.forEach(p => {
+          txt += `\n\nFolio: *${p.folio}*\nEstatus: ${p.estatus}`;
         });
 
-        return respuesta;
+        return { tipo: "texto", mensaje: txt };
+      }
+
+      if (mensaje.includes("3") || mensaje.toLowerCase().includes("asesor")) {
+        return { tipo: "texto", mensaje: "📞 Un asesor te atenderá pronto." };
+      }
+
+      return responderMenu();
     }
 
-    if (esSaludo(mensaje) || esIntencionCotizar(mensaje)) {
-        eliminarSesion(clienteId);
-        iniciarSesion(clienteId);
-        return `👋 Hola, soy el asistente de cotizaciones.
+    // ===============================
+    // ESPERANDO FORMATO
+    // ===============================
+    if (sesion.estado === "ESPERANDO_FORMATO") {
 
-Estoy aquí para ayudarte a calcular el costo de tu envío de forma rápida y segura.
+      const datos = extraerDatos(mensaje);
 
-📏 Para comenzar, ingresa el LARGO del paquete (cm):`;
+      if (!/^\d{5}$/.test(datos.origen.cp) ||
+          !/^\d{5}$/.test(datos.destino.cp)) {
+        return { tipo: "texto", mensaje: "❌ El CP debe tener 5 dígitos." };
+      }
+
+      if (!/^\d{10}$/.test(datos.origen.cel) ||
+          !/^\d{10}$/.test(datos.destino.cel)) {
+        return { tipo: "texto", mensaje: "❌ El celular debe tener 10 dígitos." };
+      }
+
+      sesion.datosTemporales = datos;
+      sesion.estado = "PREGUNTANDO_FACTURA";
+
+      return {
+        tipo: "texto",
+        mensaje:
+`¿Tu envío requiere factura? 🧾
+
+1️⃣ Sí
+2️⃣ No`
+      };
     }
 
-    if (!sesiones.has(clienteId)) {
-        return "Si deseas cotizar, escribe un saludo o algo como 'quiero cotizar un envío'.";
+    // ===============================
+    // PREGUNTANDO FACTURA
+    // ===============================
+    if (sesion.estado === "PREGUNTANDO_FACTURA") {
+
+      const respuesta = mensaje.toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+
+      const esSi = ["1", "si"].includes(respuesta);
+      const esNo = ["2", "no"].includes(respuesta);
+
+      if (!esSi && !esNo) {
+        return { tipo: "texto", mensaje: "Responde con 1, 2, si o no." };
+      }
+
+      const d = sesion.datosTemporales;
+
+      const medidas = d.paquete.medidas?.match(/(\d+)\s*[x*]\s*(\d+)\s*[x*]\s*(\d+)/i);
+      const peso = d.paquete.peso?.match(/(\d+)/);
+
+      if (!medidas || !peso) {
+        return {
+          tipo: "texto",
+          mensaje: "❌ Formato inválido. Usa ejemplo: 30x20x10 y peso 5"
+        };
+      }
+
+      const resultado = await cotizar({
+        largo: medidas[1],
+        ancho: medidas[2],
+        alto: medidas[3],
+        pesoReal: peso[1],
+        conFactura: esSi
+      });
+
+      sesion.cotizacion = resultado;
+      sesion.estado = "CONFIRMANDO_PEDIDO";
+
+      return {
+        tipo: "texto",
+        mensaje:
+`💰 *COTIZACIÓN*
+
+1️⃣ Estafeta Express: $${resultado.estafetaExpress}
+2️⃣ Estafeta Terrestre: $${resultado.estafetaTerrestre}
+3️⃣ FedEx Terrestre: $${resultado.fedexTerrestre}
+
+Elige 1, 2 o 3 para confirmar.`
+      };
     }
 
-    const sesion = obtenerSesion(clienteId);
+    // ===============================
+    // CONFIRMAR PEDIDO
+    // ===============================
+    if (sesion.estado === "CONFIRMANDO_PEDIDO") {
 
-    if (sesion === "EXPIRADA") {
-        return "⏳ Tu sesión expiró por inactividad.\nEscribe un saludo para comenzar nuevamente.";
+      const opciones = {
+        "1": { nombre: "Estafeta Express", costo: sesion.cotizacion?.estafetaExpress },
+        "2": { nombre: "Estafeta Terrestre", costo: sesion.cotizacion?.estafetaTerrestre },
+        "3": { nombre: "FedEx Terrestre", costo: sesion.cotizacion?.fedexTerrestre }
+      };
+
+      if (!opciones[mensaje]) {
+        return { tipo: "texto", mensaje: "Elige 1, 2 o 3." };
+      }
+
+      const pedidoFinal = {
+        ...sesion.datosTemporales,
+        servicio: opciones[mensaje].nombre,
+        costo: opciones[mensaje].costo
+      };
+
+      const folio = await guardarPedidoConfirmado(clienteId, pedidoFinal);
+
+      sesion.estado = "ESPERANDO_COMPROBANTE";
+      sesion.folioPendiente = folio;
+
+      return {
+        tipo: "texto",
+        mensaje:
+`✅ *PEDIDO REGISTRADO: ${folio}*
+
+💳 Para generar tu guía realiza la transferencia por *$${pedidoFinal.costo}*.
+
+🏦 *Datos bancarios*
+Banco: ${process.env.BANCO}
+Cuenta: ${process.env.CUENTA}
+CLABE: ${process.env.CLABE}
+Titular: ${process.env.TITULAR}
+
+📸 Envía tu comprobante por este medio.`
+      };
     }
 
-    if (!sesion) {
-        return "Escribe un saludo para iniciar.";
+    return responderMenu();
+
+  } catch (error) {
+    console.error("Flow error:", error.message);
+
+    return {
+      tipo: "texto",
+      mensaje: "⚠️ Ocurrió un error interno. Intenta nuevamente."
+    };
+  }
+}
+
+function responderMenu() {
+  return {
+    tipo: "texto",
+    mensaje:
+`Selecciona una opción:
+
+1️⃣ Cotizar envío
+2️⃣ Rastrear guía
+3️⃣ Hablar con asesor`
+  };
+}
+
+function extraerDatos(msg) {
+
+  const safe = (value) => value?.trim?.().substring(0, 200) || "";
+
+  const buscar = (re) => {
+    const m = msg.match(re);
+    return safe(m ? m[1] : "");
+  };
+
+  return {
+    origen: {
+      nombre: buscar(/Nombre Origen\s*:\s*(.*)/i),
+      calle: buscar(/Calle y Número Origen\s*:\s*(.*)/i),
+      colonia: buscar(/Colonia Origen\s*:\s*(.*)/i),
+      ciudad: buscar(/Ciudad y Estado Origen\s*:\s*(.*)/i),
+      cp: buscar(/CP Origen\s*:\s*(.*)/i),
+      cel: buscar(/Cel Origen\s*:\s*(.*)/i)
+    },
+    destino: {
+      nombre: buscar(/Nombre Destino\s*:\s*(.*)/i),
+      calle: buscar(/Calle y Número Destino\s*:\s*(.*)/i),
+      colonia: buscar(/Colonia Destino\s*:\s*(.*)/i),
+      ciudad: buscar(/Ciudad y Estado Destino\s*:\s*(.*)/i),
+      cp: buscar(/CP Destino\s*:\s*(.*)/i),
+      cel: buscar(/Cel Destino\s*:\s*(.*)/i)
+    },
+    paquete: {
+      medidas: buscar(/Medidas\s*\(LxAxA\)\s*:\s*(.*)/i),
+      peso: buscar(/Peso\s*\(kg\)\s*:\s*(.*)/i),
+      contenido: buscar(/Contenido\s*:\s*(.*)/i)
     }
-
-    actualizarActividad(clienteId);
-
-    switch (sesion.step) {
-
-        case "LARGO": {
-            const largo = validarNumero(mensaje);
-            if (!largo) {
-                return "⚠️ Valor inválido.\nDebes ingresar el LARGO en centímetros (solo números).";
-            }
-            sesion.data.largo = largo;
-            sesion.step = "ANCHO";
-            return "📦 Ingresa el ANCHO (cm):";
-        }
-
-        case "ANCHO": {
-            const ancho = validarNumero(mensaje);
-            if (!ancho) {
-                return "⚠️ Valor inválido.\nDebes ingresar el ANCHO en centímetros (solo números).";
-            }
-            sesion.data.ancho = ancho;
-            sesion.step = "ALTO";
-            return "📦 Ingresa el ALTO (cm):";
-        }
-
-        case "ALTO": {
-            const alto = validarNumero(mensaje);
-            if (!alto) {
-                return "⚠️ Valor inválido.\nDebes ingresar el ALTO en centímetros (solo números).";
-            }
-            sesion.data.alto = alto;
-            sesion.step = "PESO";
-            return "⚖️ Ingresa el PESO real (kg):";
-        }
-
-        case "PESO": {
-            const peso = validarNumero(mensaje);
-            if (!peso) {
-                return "⚠️ Valor inválido.\nDebes ingresar el PESO en kilogramos (solo números).";
-            }
-
-            sesion.data.pesoReal = peso;
-
-            const resultado = await cotizar(sesion.data);
-
-            sesion.data.cotizacion = resultado;
-            sesion.step = "SERVICIO";
-
-            return (
-                `📦 *Tu cotización:*\n\n` +
-                `⚖️ Peso facturable: ${resultado.pesoFacturable} kg\n\n` +
-                `1️⃣ Estafeta Express: $${resultado.estafetaExpress}\n` +
-                `2️⃣ Estafeta Terrestre: $${resultado.estafetaTerrestre}\n` +
-                `3️⃣ FedEx Terrestre: $${resultado.fedexTerrestre}\n\n` +
-                `Escribe 1, 2 o 3 para elegir servicio.`
-            );
-        }
-
-        case "SERVICIO": {
-
-            if (!["1", "2", "3"].includes(mensaje)) {
-                return "⚠️ Opción no válida.\nDebes escribir 1, 2 o 3.";
-            }
-
-            const mapaServicios = {
-                "1": "Estafeta Express",
-                "2": "Estafeta Terrestre",
-                "3": "FedEx Terrestre"
-            };
-
-            const mapaCostos = {
-                "1": sesion.data.cotizacion.estafetaExpress,
-                "2": sesion.data.cotizacion.estafetaTerrestre,
-                "3": sesion.data.cotizacion.fedexTerrestre
-            };
-
-            sesion.data.servicio = mapaServicios[mensaje];
-            sesion.data.costo = mapaCostos[mensaje];
-            sesion.step = "CONFIRMAR";
-
-            return (
-                `Confirmar pedido:\n\n` +
-                `Servicio: ${sesion.data.servicio}\n` +
-                `Costo: $${sesion.data.costo}\n\n` +
-                `Escribe SI para confirmar o NO para cancelar.`
-            );
-        }
-
-        case "CONFIRMAR": {
-
-            if (["si", "sí", "s"].includes(mensaje)) {
-
-                const numeroPedido = await guardarPedidoConfirmado({
-                    cliente: clienteId,
-                    largo: sesion.data.largo,
-                    ancho: sesion.data.ancho,
-                    alto: sesion.data.alto,
-                    pesoReal: sesion.data.pesoReal,
-                    pesoFacturable: sesion.data.cotizacion.pesoFacturable,
-                    servicio: sesion.data.servicio,
-                    costo: sesion.data.costo
-                });
-
-                eliminarSesion(clienteId);
-
-                return `✅ Pedido confirmado.
-
-🧾 Número: ${numeroPedido}
-
-Escribe "mis pedidos" para consultar tu historial.`;
-            }
-
-            if (["no", "n"].includes(mensaje)) {
-                eliminarSesion(clienteId);
-                return "❌ Pedido cancelado.\nEscribe un saludo para iniciar nuevamente.";
-            }
-
-            return "⚠️ Respuesta inválida.\nEscribe SI para confirmar o NO para cancelar.";
-        }
-
-        default:
-            eliminarSesion(clienteId);
-            return "Error interno. Escribe un saludo para comenzar nuevamente.";
-    }
+  };
 }
 
 module.exports = { procesarMensaje };

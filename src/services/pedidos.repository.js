@@ -2,65 +2,37 @@
 const { getSheetsClient } = require("../config/google");
 const { google: config } = require("../config/env");
 
-function generarNumeroPedido() {
-  const fecha = new Date();
-  const timestamp = Date.now().toString().slice(-6);
-  return `PED-${fecha.getFullYear()}${fecha.getMonth() + 1}${fecha.getDate()}-${timestamp}`;
-}
+async function guardarPedidoConfirmado(clienteId, d) {
+    const sheets = await getSheetsClient();
+    const folio = `PED-${Date.now().toString().slice(-6)}`;
+    const facturaTxt = d.conFactura ? "CON FACTURA" : "SIN FACTURA";
 
-async function guardarPedidoConfirmado({
-  cliente,
-  largo,
-  ancho,
-  alto,
-  pesoReal,
-  pesoFacturable,
-  servicio,
-  costo
-}) {
-  const sheets = await getSheetsClient();
-  const numeroPedido = generarNumeroPedido();
+    const row = [
+        folio, new Date().toLocaleString("es-MX"), clienteId,
+        d.origen.nombre, d.origen.calle, d.origen.colonia, d.origen.ciudad, d.origen.cp, d.origen.cel,
+        d.destino.nombre, d.destino.calle, d.destino.colonia, d.destino.ciudad, d.destino.cp, d.destino.cel,
+        d.paquete.medidas, d.paquete.peso, d.paquete.contenido,
+        `${d.servicio} ($${d.costo}) - ${facturaTxt}`, // Columna S
+        "Pendiente", // T: Estatus
+        "", "",      // U y V
+    ];
 
-  await sheets.spreadsheets.values.append({
-    spreadsheetId: config.spreadsheetId,
-    range: "Pedidos!A:K",
-    valueInputOption: "USER_ENTERED",
-    requestBody: {
-      values: [[
-        numeroPedido,
-        new Date().toLocaleString(),
-        cliente,
-        largo,
-        ancho,
-        alto,
-        pesoReal,
-        pesoFacturable,
-        servicio,
-        costo,
-        "Pendiente"
-      ]]
-    }
-  });
-
-  return numeroPedido;
+    await sheets.spreadsheets.values.append({
+        spreadsheetId: config.spreadsheetId,
+        range: "Pedidos!A:V",
+        valueInputOption: "USER_ENTERED",
+        requestBody: { values: [row] }
+    });
+    return folio;
 }
 
 async function obtenerPedidosPorCliente(clienteId) {
-  const sheets = await getSheetsClient();
-
-  const response = await sheets.spreadsheets.values.get({
-    spreadsheetId: config.spreadsheetId,
-    range: "Pedidos!A2:K"
-  });
-
-  const filas = response.data.values || [];
-
-  return filas
-    .filter(fila => fila[2] === clienteId)
-    .slice(-5);
+    const sheets = await getSheetsClient();
+    const res = await sheets.spreadsheets.values.get({
+        spreadsheetId: config.spreadsheetId, range: "Pedidos!A2:T"
+    });
+    const filas = res.data.values || [];
+    return filas.filter(f => f[2] === clienteId).map(f => ({ folio: f[0], estatus: f[19] })).slice(-5);
 }
 
-module.exports = {
-  guardarPedidoConfirmado,
-  obtenerPedidosPorCliente
-};
+module.exports = { guardarPedidoConfirmado, obtenerPedidosPorCliente };

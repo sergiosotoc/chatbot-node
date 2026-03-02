@@ -1,41 +1,60 @@
 /* src/controllers/webhook.controller.js */
-const { enviarTexto } = require("../services/whatsapp.service");
+
+const { enviarTexto, enviarPlantilla } = require("../services/whatsapp.service");
 const { procesarMensaje } = require("../services/flujo.service");
 
-const mensajesProcesados = new Set();
+let mensajesProcesados = [];
 
 async function handleWebhook(req, res) {
-  try {
-    const payload = req.body;
-    const message = payload?.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
 
+    const message = req.body?.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
     if (!message) return res.sendStatus(200);
 
     const messageId = message.id;
+    if (mensajesProcesados.includes(messageId)) return res.sendStatus(200);
 
-    if (mensajesProcesados.has(messageId)) {
-      console.log("Mensaje duplicado ignorado:", messageId);
-      return res.sendStatus(200);
-    }
-
-    mensajesProcesados.add(messageId);
+    mensajesProcesados.push(messageId);
+    if (mensajesProcesados.length > 50) mensajesProcesados.shift();
 
     const from = message.from;
-    const body = message.text?.body;
 
-    if (!body) return res.sendStatus(200);
+    let texto = "";
+    let tipoMensaje = message.type;
+    let mediaId = null;
 
-    console.log("Mensaje recibido:", body);
+    if (message.type === "text") {
+        texto = message.text.body;
+    }
+
+    if (message.type === "button") {
+        texto = message.button.text;
+    }
+
+    if (message.type === "image") {
+        texto = "__IMAGEN__";
+        mediaId = message.image.id;
+    }
 
     res.sendStatus(200);
 
-    const respuesta = await procesarMensaje(from, body);
-    await enviarTexto(from, respuesta);
+    try {
+        const respuesta = await procesarMensaje(from, texto, tipoMensaje, mediaId);
 
-  } catch (error) {
-    console.error("ERROR WEBHOOK:", error);
-    res.sendStatus(200);
-  }
+        if (!respuesta) return;
+
+        if (respuesta.tipo === "plantilla") {
+            await enviarPlantilla(from, respuesta.nombre, respuesta.parametros || []);
+            return;
+        }
+
+        if (respuesta.tipo === "texto") {
+            await enviarTexto(from, respuesta.mensaje);
+            return;
+        }
+
+    } catch (e) {
+        console.error("Error procesando:", e);
+    }
 }
 
 module.exports = { handleWebhook };
