@@ -1,63 +1,36 @@
 /* src/services/cotizador.service.js */
-const { getSheetsClient } = require("../config/google");
-const { google: config } = require("../config/env");
-
-let cacheTarifas = null;
-let ultimaCarga = 0;
-const CACHE_TIEMPO = 10 * 60 * 1000;
-
-function limpiarNumero(valor) {
-    if (!valor) return 0;
-    const limpio = valor.toString().replace(/[$\s]/g, "").replace(",", ".");
-    return Number(limpio) || 0;
-}
-
-async function cargarTarifas() {
-    const ahora = Date.now();
-    if (cacheTarifas && (ahora - ultimaCarga < CACHE_TIEMPO)) return cacheTarifas;
-
-    const sheets = await getSheetsClient();
-    const response = await sheets.spreadsheets.values.get({
-        spreadsheetId: config.spreadsheetId,
-        range: "Tarifas!A2:G100" 
-    });
-
-    const filas = response.data.values || [];
-    cacheTarifas = filas.map(f => ({
-        pesoMax: limpiarNumero(f[0]),
-        estafetaExpress:   { sin: limpiarNumero(f[1]), con: limpiarNumero(f[2]) },
-        estafetaTerrestre: { sin: limpiarNumero(f[3]), con: limpiarNumero(f[4]) },
-        fedexTerrestre:    { sin: limpiarNumero(f[5]), con: limpiarNumero(f[6]) }
-    })).filter(f => f.pesoMax > 0);
-
-    ultimaCarga = ahora;
-    return cacheTarifas;
-}
+const { supabase } = require("../config/supabase");
 
 async function cotizar({ largo, ancho, alto, pesoReal, conFactura = false }) {
-    const L = limpiarNumero(largo);
-    const A = limpiarNumero(ancho);
-    const H = limpiarNumero(alto);
-    const P = limpiarNumero(pesoReal);
+    const L = Number(largo);
+    const A = Number(ancho);
+    const H = Number(alto);
+    const P = Number(pesoReal);
 
     const pesoVol = (L * A * H) / 5000;
     const pesoFacturable = Math.ceil(Math.max(P, pesoVol));
     
-    // Regla de negocio: +175 si algún lado mide más de 1m (100cm)
     const CARGO_EXCEDENTE = (L > 100 || A > 100 || H > 100) ? 175 : 0;
     
-    const tarifas = await cargarTarifas();
-    const t = tarifas.find(t => pesoFacturable <= t.pesoMax) || tarifas[tarifas.length - 1];
-    const modo = conFactura ? 'con' : 'sin';
+    // Consultamos la tabla de tarifas en Supabase
+    const { data: tarifas, error } = await supabase
+        .from("tarifas")
+        .select("*")
+        .gte("peso_max", pesoFacturable)
+        .order("peso_max", { ascending: true })
+        .limit(1);
+
+    if (error || !tarifas.length) throw new Error("No hay tarifa para este peso");
+
+    const t = tarifas[0];
+    const sufijo = conFactura ? '_con' : '_sin';
 
     return {
         pesoFacturable,
         cargoExcedente: CARGO_EXCEDENTE,
         conFactura,
-        estafetaExpress: t.estafetaExpress[modo] + CARGO_EXCEDENTE,
-        estafetaTerrestre: t.estafetaTerrestre[modo] + CARGO_EXCEDENTE,
-        fedexTerrestre: t.fedexTerrestre[modo] + CARGO_EXCEDENTE
+        estafetaExpress: t[`estafeta_express${sufijo}`] + CARGO_EXCEDENTE,
+        estafetaTerrestre: t[`estafeta_terrestre${sufijo}`] + CARGO_EXCEDENTE,
+        fedexTerrestre: t[`fedex_terrestre${sufijo}`] + CARGO_EXCEDENTE
     };
 }
-
-module.exports = { cotizar };

@@ -1,40 +1,52 @@
 /* src/admin/admin.controller.js */
-const { getSheetsClient } = require("../config/google");
-const { google: googleConfig } = require("../config/env");
+const { supabase } = require("../config/supabase");
 
 async function getDashboard(req, res) {
-    try {
-        const sheets = await getSheetsClient();
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: googleConfig.spreadsheetId,
-            range: "Pedidos!A2:T" 
-        });
 
-        const filas = response.data.values || [];
-        
-        const pedidos = filas.map(f => ({
-            folio: f[0] || "S/F",
-            fecha: f[1] || "",
-            cliente: f[2] || "S/C",
-            servicio: f[18] || "No especificado",
-            estatus: f[19] || "Pendiente"
-        })).reverse().slice(0, 10);
+  try {
 
-        const hoy = new Date().toLocaleDateString("es-MX");
-        
-        return res.json({
-            user: req.user || { username: "Admin" },
-            stats: {
-                totalHoy: filas.filter(f => f[1] && f[1].includes(hoy)).length,
-                pendientes: filas.filter(f => f[19] === "Pendiente").length
-            },
-            pedidos: pedidos,
-            health: { status: "ok", uptime: process.uptime() }
-        });
-    } catch (error) {
-        console.error("DETALLE DEL ERROR 500:", error);
-        res.status(500).json({ error: "Error en el servidor de datos" });
-    }
+    const { data: pedidos } = await supabase
+      .from("pedidos")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(15);
+
+    const hoy = new Date();
+    hoy.setHours(0,0,0,0);
+
+    const { count: totalHoy } = await supabase
+      .from("pedidos")
+      .select("*",{count:"exact",head:true})
+      .gte("created_at",hoy.toISOString());
+
+    const { count: pendientes } = await supabase
+      .from("pedidos")
+      .select("*",{count:"exact",head:true})
+      .eq("estatus","pendiente");
+
+    res.json({
+      user:req.user,
+      stats:{
+        totalHoy:totalHoy||0,
+        pendientes:pendientes||0
+      },
+      pedidos:pedidos||[],
+      health:{
+        status:"ok",
+        uptime:process.uptime()
+      }
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    res.status(500).json({
+      error:"Error cargando dashboard"
+    });
+
+  }
+
 }
 
-module.exports = { getDashboard };
+module.exports={getDashboard};

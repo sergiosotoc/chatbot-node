@@ -46,7 +46,7 @@ async function procesarMensaje(clienteId, mensaje, tipoMensaje = "text", mediaId
       return {
         tipo: "texto",
         mensaje:
-`👋 Hola, bienvenido a *AHSE Paquetería*.
+          `👋 Hola, bienvenido a *AHSE Paquetería*.
 
 Estoy listo para ayudarte con tu envío.
 
@@ -77,42 +77,63 @@ Selecciona una opción:
     if (sesion.estado === "ESPERANDO_COMPROBANTE") {
 
       if (tipoMensaje === "image" && mediaId) {
+        const numOperador = process.env.NUMERO_OPERADOR.replace(/^521/, '52');
+        const d = sesion.datosTemporales; // Aquí están los datos que extrajimos del formato
 
-        if (!process.env.NUMERO_OPERADOR) {
-          throw new Error("NUMERO_OPERADOR not configured");
+        // Construimos el mensaje detallado para el operador
+        const mensajeParaOperador = `📸 *COMPROBANTE RECIBIDO*
+    
+*FOLIO:* ${sesion.folioPendiente}
+*SERVICIO:* ${sesion.servicioElegido || 'No especificado'}
+
+*ORIGEN*
+*Nombre:* ${d.origen.nombre}
+*Calle:* ${d.origen.calle}
+*Colonia:* ${d.origen.colonia}
+*Ciudad:* ${d.origen.ciudad}
+*CP:* ${d.origen.cp}
+*Cel:* ${d.origen.cel}
+
+*DESTINO*
+*Nombre:* ${d.destino.nombre}
+*Calle:* ${d.destino.calle}
+*Colonia:* ${d.destino.colonia}
+*Ciudad:* ${d.destino.ciudad}
+*CP:* ${d.destino.cp}
+*Cel:* ${d.destino.cel}
+
+*PAQUETE*
+*Medidas:* ${d.paquete.medidas}
+*Peso:* ${d.paquete.peso} kg
+*Contenido:* ${d.paquete.contenido}
+
+Adjunto comprobante enviado por el cliente (${clienteId}):`;
+
+        try {
+          // Enviamos primero toda la información en texto
+          await enviarTexto(numOperador, mensajeParaOperador);
+
+          // Luego enviamos la imagen
+          await reenviarImagenConCaption(
+            numOperador,
+            mediaId,
+            `Comprobante Folio: ${sesion.folioPendiente}`
+          );
+        } catch (error) {
+          console.error("Error notificando al operador:", error.message);
         }
 
-        await enviarTexto(
-          process.env.NUMERO_OPERADOR,
-`📸 *COMPROBANTE RECIBIDO*
-
-🧾 Folio: ${sesion.folioPendiente}
-👤 Cliente: ${clienteId}
-
-Adjunto comprobante enviado por el cliente:`
-        );
-
-        await reenviarImagenConCaption(
-          process.env.NUMERO_OPERADOR,
-          mediaId,
-          `Comprobante de ${clienteId}`
-        );
-
         sesiones.delete(clienteId);
-
         return {
           tipo: "texto",
-          mensaje:
-`✅ Hemos recibido tu comprobante.
-
-En breve validaremos el pago y procederemos a generar tu guía.`
+          mensaje: "✅ Hemos recibido tu comprobante. En breve validaremos el pago y generaremos tu guía."
         };
       }
 
       return {
         tipo: "texto",
         mensaje:
-`⚠️ Estamos esperando tu comprobante de pago.
+          `⚠️ Estamos esperando tu comprobante de pago.
 
 Por favor envía la imagen del comprobante para continuar.`
       };
@@ -129,7 +150,7 @@ Por favor envía la imagen del comprobante para continuar.`
         return {
           tipo: "texto",
           mensaje:
-`📦 *FORMATO DE DATOS*
+            `📦 *FORMATO DE DATOS*
 Copia y rellena este mensaje:
 
 *ORIGEN*
@@ -185,12 +206,12 @@ Contenido:`
       const datos = extraerDatos(mensaje);
 
       if (!/^\d{5}$/.test(datos.origen.cp) ||
-          !/^\d{5}$/.test(datos.destino.cp)) {
+        !/^\d{5}$/.test(datos.destino.cp)) {
         return { tipo: "texto", mensaje: "❌ El CP debe tener 5 dígitos." };
       }
 
       if (!/^\d{10}$/.test(datos.origen.cel) ||
-          !/^\d{10}$/.test(datos.destino.cel)) {
+        !/^\d{10}$/.test(datos.destino.cel)) {
         return { tipo: "texto", mensaje: "❌ El celular debe tener 10 dígitos." };
       }
 
@@ -200,7 +221,7 @@ Contenido:`
       return {
         tipo: "texto",
         mensaje:
-`¿Tu envío requiere factura? 🧾
+          `¿Tu envío requiere factura? 🧾
 
 1️⃣ Sí
 2️⃣ No`
@@ -249,7 +270,7 @@ Contenido:`
       return {
         tipo: "texto",
         mensaje:
-`💰 *COTIZACIÓN*
+          `💰 *COTIZACIÓN*
 
 1️⃣ Estafeta Express: $${resultado.estafetaExpress}
 2️⃣ Estafeta Terrestre: $${resultado.estafetaTerrestre}
@@ -280,6 +301,8 @@ Elige 1, 2 o 3 para confirmar.`
         costo: opciones[mensaje].costo
       };
 
+      sesion.servicioElegido = opciones[mensaje].nombre;
+
       const folio = await guardarPedidoConfirmado(clienteId, pedidoFinal);
 
       sesion.estado = "ESPERANDO_COMPROBANTE";
@@ -288,7 +311,7 @@ Elige 1, 2 o 3 para confirmar.`
       return {
         tipo: "texto",
         mensaje:
-`✅ *PEDIDO REGISTRADO: ${folio}*
+          `✅ *PEDIDO REGISTRADO: ${folio}*
 
 💳 Para generar tu guía realiza la transferencia por *$${pedidoFinal.costo}*.
 
@@ -318,7 +341,7 @@ function responderMenu() {
   return {
     tipo: "texto",
     mensaje:
-`Selecciona una opción:
+      `Selecciona una opción:
 
 1️⃣ Cotizar envío
 2️⃣ Rastrear guía
@@ -327,11 +350,12 @@ function responderMenu() {
 }
 
 function extraerDatos(msg) {
+  const limpio = msg.replace(/\r/g, "");
 
   const safe = (value) => value?.trim?.().substring(0, 200) || "";
 
   const buscar = (re) => {
-    const m = msg.match(re);
+    const m = limpio.match(re);
     return safe(m ? m[1] : "");
   };
 
@@ -341,16 +365,16 @@ function extraerDatos(msg) {
       calle: buscar(/Calle y Número Origen\s*:\s*(.*)/i),
       colonia: buscar(/Colonia Origen\s*:\s*(.*)/i),
       ciudad: buscar(/Ciudad y Estado Origen\s*:\s*(.*)/i),
-      cp: buscar(/CP Origen\s*:\s*(.*)/i),
-      cel: buscar(/Cel Origen\s*:\s*(.*)/i)
+      cp: buscar(/CP Origen\s*:\s*(\d{5})/i),
+      cel: buscar(/Cel Origen\s*:\s*(\d{10})/i)
     },
     destino: {
       nombre: buscar(/Nombre Destino\s*:\s*(.*)/i),
       calle: buscar(/Calle y Número Destino\s*:\s*(.*)/i),
       colonia: buscar(/Colonia Destino\s*:\s*(.*)/i),
       ciudad: buscar(/Ciudad y Estado Destino\s*:\s*(.*)/i),
-      cp: buscar(/CP Destino\s*:\s*(.*)/i),
-      cel: buscar(/Cel Destino\s*:\s*(.*)/i)
+      cp: buscar(/CP Destino\s*:\s*(\d{5})/i),
+      cel: buscar(/Cel Destino\s*:\s*(\d{10})/i)
     },
     paquete: {
       medidas: buscar(/Medidas\s*\(LxAxA\)\s*:\s*(.*)/i),

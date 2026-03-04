@@ -1,4 +1,4 @@
-/* src/auth/auth.routes.js */
+/* src/modules/auth/auth.routes.js */
 
 const router = require("express").Router();
 const { login } = require("./auth.controller");

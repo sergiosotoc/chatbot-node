@@ -1,60 +1,63 @@
 /* src/controllers/webhook.controller.js */
 
-const { enviarTexto, enviarPlantilla } = require("../services/whatsapp.service");
-const { procesarMensaje } = require("../services/flujo.service");
-
-let mensajesProcesados = [];
+const { supabase } = require("../config/supabase")
+const { procesarMensaje } = require("../services/flujo.service")
+const { enviarTexto } = require("../services/whatsapp.service")
 
 async function handleWebhook(req, res) {
 
-    const message = req.body?.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
-    if (!message) return res.sendStatus(200);
+    const message = req.body?.entry?.[0]?.changes?.[0]?.value?.messages?.[0]
 
-    const messageId = message.id;
-    if (mensajesProcesados.includes(messageId)) return res.sendStatus(200);
+    if (!message) return res.sendStatus(200)
 
-    mensajesProcesados.push(messageId);
-    if (mensajesProcesados.length > 50) mensajesProcesados.shift();
+    const telefono = message.from
+    const texto = message.text?.body || ""
 
-    const from = message.from;
+    let { data: cliente } = await supabase
+        .from("clientes_whatsapp")
+        .select("*")
+        .eq("telefono", telefono)
+        .single()
 
-    let texto = "";
-    let tipoMensaje = message.type;
-    let mediaId = null;
+    if (!cliente) {
 
-    if (message.type === "text") {
-        texto = message.text.body;
+        const { data } = await supabase
+            .from("clientes_whatsapp")
+            .insert({ telefono })
+            .select()
+            .single()
+
+        cliente = data
+
     }
 
-    if (message.type === "button") {
-        texto = message.button.text;
+    await supabase.from("mensajes").insert({
+
+        cliente_id: cliente.id,
+        direccion: "in",
+        tipo: "text",
+        contenido: texto
+
+    })
+
+    // 🔥 ejecutar flujo del bot
+    const respuesta = await procesarMensaje(cliente.id, texto)
+
+    if (respuesta?.tipo === "texto") {
+
+        await enviarTexto(telefono, respuesta.mensaje)
+
+        await supabase.from("mensajes").insert({
+            cliente_id: cliente.id,
+            direccion: "out",
+            tipo: "text",
+            contenido: respuesta.mensaje
+        })
+
     }
 
-    if (message.type === "image") {
-        texto = "__IMAGEN__";
-        mediaId = message.image.id;
-    }
+    res.sendStatus(200)
 
-    res.sendStatus(200);
-
-    try {
-        const respuesta = await procesarMensaje(from, texto, tipoMensaje, mediaId);
-
-        if (!respuesta) return;
-
-        if (respuesta.tipo === "plantilla") {
-            await enviarPlantilla(from, respuesta.nombre, respuesta.parametros || []);
-            return;
-        }
-
-        if (respuesta.tipo === "texto") {
-            await enviarTexto(from, respuesta.mensaje);
-            return;
-        }
-
-    } catch (e) {
-        console.error("Error procesando:", e);
-    }
 }
 
-module.exports = { handleWebhook };
+module.exports = { handleWebhook }

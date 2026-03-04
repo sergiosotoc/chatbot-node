@@ -1,49 +1,133 @@
 /* src/app.js */
-const express = require("express");
-const cors = require("cors");
-const rateLimit = require("express-rate-limit");
-const helmet = require("helmet");
-const routes = require("./routes/webhook.routes");
-const authRoutes = require("./auth/auth.routes");
-const adminRoutes = require("./admin/admin.routes");
-const { admin } = require("googleapis/build/src/apis/admin");
 
-const app = express();
+const express = require("express")
+const cors = require("cors")
+const helmet = require("helmet")
+
+const webhookRoutes = require("./routes/webhook.routes")
+const adminRoutes = require("./admin/admin.routes")
+const authRoutes = require("./modules/auth/auth.routes")
+const { getConfig } = require("./controllers/config.controller")
+
+const app = express()
+
+
+app.set("trust proxy", 1)
+
+const rateLimit = require("express-rate-limit")
+
+app.use(rateLimit({
+ windowMs: 60 * 1000,
+ max: 100
+}))
+
+// -----------------------------
+// SEGURIDAD (HELMET)
+// -----------------------------
 
 app.use(
-  helmet({
-    contentSecurityPolicy: {
-      directives: {
-        "default-src": ["'self'"],
-        "script-src": ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com"],
-        "script-src-attr": ["'unsafe-inline'"],
-        "style-src": ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"],
-        "font-src": ["'self'", "https://cdnjs.cloudflare.com"],
-        "img-src": ["'self'", "data:", "https://*"],
-        "connect-src": ["'self'"],
-      },
-    },
-  })
-);
+helmet({
+contentSecurityPolicy: {
+directives: {
 
-app.use(cors({
-    origin: process.env.ALLOWED_ORIGIN || false
-}));
-app.use(rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 300
-}));
+defaultSrc: ["'self'"],
 
-app.use(express.json({
-    verify: (req, res, buf) => {
-        req.rawBody = buf;
-    }
-}));
+// scripts permitidos
+scriptSrc: [
+"'self'",
+"'unsafe-inline'",
+"https://cdn.tailwindcss.com",
+"https://cdn.jsdelivr.net"
+],
 
-app.use("/", routes);
+// estilos
+styleSrc: [
+"'self'",
+"'unsafe-inline'",
+"https://cdn.jsdelivr.net",
+"https://fonts.googleapis.com"
+],
 
-app.use("/auth", authRoutes);
-app.use("/admin", adminRoutes);
-app.use(express.static("public"));
+// fuentes
+fontSrc: [
+"'self'",
+"https://fonts.gstatic.com",
+"data:"
+],
 
-module.exports = app;
+// imágenes
+imgSrc: [
+"'self'",
+"data:",
+"https:"
+],
+
+// conexiones externas
+connectSrc: [
+"'self'",
+"https://*.supabase.co",
+"wss://*.supabase.co" // realtime websockets
+]
+
+}
+}
+})
+)
+
+
+// -----------------------------
+// MIDDLEWARES
+// -----------------------------
+
+app.use(cors())
+
+app.use(express.json({ limit: "10mb" }))
+
+app.use(express.urlencoded({ extended: true }))
+
+
+// -----------------------------
+// RUTAS API
+// -----------------------------
+
+app.use("/", webhookRoutes)
+
+app.use("/auth", authRoutes)
+
+app.use("/admin", adminRoutes)
+
+
+// -----------------------------
+// ARCHIVOS ESTÁTICOS
+// -----------------------------
+
+app.use(express.static("public"))
+
+
+// -----------------------------
+// MANEJO DE RUTAS NO EXISTENTES
+// -----------------------------
+
+app.use((req,res)=>{
+res.status(404).json({
+error:"Ruta no encontrada"
+})
+})
+
+
+// -----------------------------
+// MANEJO DE ERRORES GLOBAL
+// -----------------------------
+
+app.use((err,req,res,next)=>{
+console.error("Error:",err)
+
+res.status(500).json({
+error:"Error interno del servidor"
+})
+})
+
+app.get("/config", getConfig)
+
+
+module.exports = app
