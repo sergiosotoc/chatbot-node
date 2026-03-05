@@ -1,0 +1,249 @@
+﻿<!-- public/dashboard.html -->
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AHSE | Sistema de Administración Global</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/css/main.css">
+    <style>
+        /* Ajustes específicos para el Dashboard Completo */
+        .status-pill {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .status-active { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
+        .status-alert { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); }
+        .section-content { display: none; }
+        .section-content.active { display: block; animation: fadeIn 0.4s ease-out; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="flex">
+
+    <!-- Sidebar inyectado por ui-engine.js -->
+    <div id="sidebarContainer"></div>
+
+    <div class="main-viewport">
+        <!-- Navbar inyectado por ui-engine.js -->
+        <div id="navbarContainer"></div>
+
+        <div class="content-padding">
+            
+            <!-- SECCIÓN 1: PANEL PRINCIPAL (RESUMEN) -->
+            <section id="view-dashboard" class="section-content active">
+                <header class="mb-10">
+                    <h1 class="text-3xl font-extrabold tracking-tighter text-white">Resumen General</h1>
+                    <p class="text-slate-400 text-sm mt-1">Indicadores clave de rendimiento y estado del ecosistema.</p>
+                </header>
+
+                <!-- KPIs Rápidos -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+                    <div class="glass-card">
+                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Empresas Activas</p>
+                        <h2 class="font-mono text-4xl mt-3 text-white" id="stat-empresas">12</h2>
+                        <p class="text-[10px] text-emerald-500 mt-2 font-bold">↑ 15% este mes</p>
+                    </div>
+                    <div class="glass-card">
+                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Chatbots Online</p>
+                        <h2 class="font-mono text-4xl mt-3 text-emerald-400">48</h2>
+                        <p class="text-[10px] text-slate-500 mt-2">En 4 clústeres activos</p>
+                    </div>
+                    <div class="glass-card">
+                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Tasa de Respuesta</p>
+                        <h2 class="font-mono text-4xl mt-3 text-sky-400">94.2%</h2>
+                        <p class="text-[10px] text-sky-500 mt-2 font-bold">Optimizado por IA</p>
+                    </div>
+                    <div class="glass-card">
+                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Satisfacción (CSAT)</p>
+                        <h2 class="font-mono text-4xl mt-3 text-amber-400">4.8/5</h2>
+                        <p class="text-[10px] text-slate-500 mt-2">Promedio 1.2k reseñas</p>
+                    </div>
+                </div>
+
+                <!-- Alertas y Notificaciones -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 glass-card overflow-hidden p-0">
+                        <div class="px-8 py-6 border-b border-white/5 bg-white/5">
+                            <h3 class="font-bold text-white text-sm">Actividad Reciente del Sistema</h3>
+                        </div>
+                        <div class="p-4 space-y-4">
+                            <div class="flex items-center justify-between p-4 bg-slate-900/40 rounded-xl border border-white/5">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                                    <p class="text-xs text-white">Campaña masiva "Hot Sale" completada para <strong>Logística Express</strong></p>
+                                </div>
+                                <span class="text-[10px] font-mono text-slate-500">hace 2 min</span>
+                            </div>
+                            <div class="flex items-center justify-between p-4 bg-slate-900/40 rounded-xl border border-white/5">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-2 h-2 rounded-full bg-amber-500"></div>
+                                    <p class="text-xs text-white">Error de integración: <strong>Webhook API</strong> en Empresa #042</p>
+                                </div>
+                                <span class="text-[10px] font-mono text-slate-500">hace 14 min</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="glass-card">
+                        <h3 class="font-bold text-white text-sm mb-6">Estado de Servicios</h3>
+                        <div class="space-y-6">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs text-slate-400">WhatsApp API</span>
+                                <span class="status-pill status-active">Operativo</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs text-slate-400">Database Cluster</span>
+                                <span class="status-pill status-active">Operativo</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs text-slate-400">AI Engine</span>
+                                <span class="status-pill status-alert">Latencia</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECCIÓN 2: GESTIÓN DE EMPRESAS -->
+            <section id="view-empresas" class="section-content">
+                <header class="mb-10 flex justify-between items-center">
+                    <div>
+                        <h1 class="text-3xl font-extrabold tracking-tighter text-white">Gestión de Empresas</h1>
+                        <p class="text-slate-400 text-sm mt-1">Administración de clientes corporativos y sus permisos.</p>
+                    </div>
+                    <button class="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-3 rounded-xl font-bold text-sm transition shadow-lg shadow-emerald-600/20">
+                        + Registrar Nueva Empresa
+                    </button>
+                </header>
+
+                <div class="glass-card p-0 overflow-hidden">
+                    <table class="w-full text-left">
+                        <thead class="bg-white/5">
+                            <tr class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                                <th class="px-8 py-5">Nombre / ID</th>
+                                <th class="px-8 py-5">Branding</th>
+                                <th class="px-8 py-5">Uso Mensual</th>
+                                <th class="px-8 py-5">Estado</th>
+                                <th class="px-8 py-5">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-white/5">
+                            <tr class="hover:bg-white/[0.02] transition">
+                                <td class="px-8 py-5">
+                                    <p class="text-sm font-bold text-white">Logística del Norte SA</p>
+                                    <p class="text-[10px] font-mono text-slate-500">ID: EMP-9920</p>
+                                </td>
+                                <td class="px-8 py-5 text-xs text-slate-400">Corporativo (Azul)</td>
+                                <td class="px-8 py-5">
+                                    <div class="w-32 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                                        <div class="w-3/4 h-full bg-emerald-500"></div>
+                                    </div>
+                                    <p class="text-[9px] mt-1 text-slate-500">75% de cuota API</p>
+                                </td>
+                                <td class="px-8 py-5"><span class="status-pill status-active">Activo</span></td>
+                                <td class="px-8 py-5">
+                                    <button class="text-xs font-bold text-emerald-500 hover:underline">Configurar</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- SECCIÓN 3: CONFIGURACIÓN CHATBOTS -->
+            <section id="view-chatbots" class="section-content">
+                <header class="mb-10">
+                    <h1 class="text-3xl font-extrabold tracking-tighter text-white">Arquitectura de Chatbots</h1>
+                    <p class="text-slate-400 text-sm mt-1">Diseño de flujos, biblioteca de respuestas e integraciones.</p>
+                </header>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="glass-card hover:border-emerald-500/30 transition cursor-pointer">
+                        <div class="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 mb-6">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
+                        </div>
+                        <h4 class="text-white font-bold mb-2">Editor de Flujos</h4>
+                        <p class="text-xs text-slate-500 leading-relaxed">Arrastra y suelta nodos para crear conversaciones inteligentes con IA.</p>
+                    </div>
+                    <div class="glass-card hover:border-sky-500/30 transition cursor-pointer">
+                        <div class="w-12 h-12 rounded-xl bg-sky-500/10 flex items-center justify-center text-sky-500 mb-6">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"/></svg>
+                        </div>
+                        <h4 class="text-white font-bold mb-2">Plantillas FAQs</h4>
+                        <p class="text-xs text-slate-500 leading-relaxed">Gestión centralizada de respuestas predefinidas y guiones comerciales.</p>
+                    </div>
+                    <div class="glass-card hover:border-amber-500/30 transition cursor-pointer">
+                        <div class="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-500 mb-6">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/></svg>
+                        </div>
+                        <h4 class="text-white font-bold mb-2">Integraciones</h4>
+                        <p class="text-xs text-slate-500 leading-relaxed">Conexión con CRMs, ERPs, Google Sheets y la API oficial de WhatsApp.</p>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="/js/auth.js"></script>
+    <script src="/js/ui-engine.js"></script>
+    <script>
+        /**
+         * Lógica de navegación del Dashboard
+         */
+        function switchView(viewId) {
+            // Ocultar todas las secciones
+            document.querySelectorAll('.section-content').forEach(s => s.classList.remove('active'));
+            
+            // Mostrar la seleccionada
+            const target = document.getElementById(`view-${viewId}`);
+            if (target) {
+                target.classList.add('active');
+            } else {
+                console.warn(`La vista view-${viewId} no está definida en el HTML.`);
+                // Por defecto volver al dashboard si no existe
+                document.getElementById('view-dashboard').classList.add('active');
+            }
+        }
+
+        window.onload = () => {
+            if (typeof requireRole === 'function' && !requireRole("admin")) return;
+            
+            // Inicializar Sidebar y Navbar
+            initAmazingInterface('admin', 'dashboard');
+
+            // Escuchar cambios de URL o clics en el sidebar (esto requiere que el ui-engine use preventDefault)
+            // Para esta versión, simulamos el cambio de vista escuchando clics en los enlaces generados
+            document.body.addEventListener('click', (e) => {
+                const link = e.target.closest('.nav-link');
+                if (link) {
+                    e.preventDefault();
+                    const url = new URL(link.href);
+                    const view = url.pathname.split('/').pop().replace('.html', '');
+                    switchView(view);
+                    
+                    // Actualizar slider visual del sidebar (si el engine lo permite)
+                    // ...
+                }
+            });
+
+            // Mostrar fecha
+            const fechaEl = document.getElementById("fechaHoy");
+            if(fechaEl) {
+                fechaEl.textContent = new Date().toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "long" });
+            }
+        };
+    </script>
+</body>
+</html>

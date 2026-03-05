@@ -1,7 +1,7 @@
 /* src/services/flujo.service.js */
 
 const { cotizar } = require("./cotizador.service");
-const { guardarPedidoConfirmado, obtenerPedidosPorCliente } = require("./pedidos.repository");
+const { guardarPedidoConfirmado, obtenerPedidosPorCliente } = require("../modules/pedidos/pedidos.repository");
 const { enviarTexto, reenviarImagenConCaption } = require("./whatsapp.service");
 
 const VEINTICUATRO_HORAS = 24 * 60 * 60 * 1000;

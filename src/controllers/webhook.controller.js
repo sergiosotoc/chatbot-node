@@ -5,59 +5,64 @@ const { procesarMensaje } = require("../services/flujo.service")
 const { enviarTexto } = require("../services/whatsapp.service")
 
 async function handleWebhook(req, res) {
+    res.sendStatus(200)
 
-    const message = req.body?.entry?.[0]?.changes?.[0]?.value?.messages?.[0]
+    try {
+        const message = req.body?.entry?.[0]?.changes?.[0]?.value?.messages?.[0]
+        if (!messages) return
 
-    if (!message) return res.sendStatus(200)
+        const telefono = message.from
 
-    const telefono = message.from
-    const texto = message.text?.body || ""
-
-    let { data: cliente } = await supabase
-        .from("clientes_whatsapp")
-        .select("*")
-        .eq("telefono", telefono)
-        .single()
-
-    if (!cliente) {
-
-        const { data } = await supabase
+        let { data: cliente } = await supabase
             .from("clientes_whatsapp")
-            .insert({ telefono })
-            .select()
+            .select("*")
+            .eq("telefono", telefono)
             .single()
 
-        cliente = data
+        if (!cliente) {
 
-    }
+            const { data } = await supabase
+                .from("clientes_whatsapp")
+                .insert({ telefono })
+                .select()
+                .single()
 
-    await supabase.from("mensajes").insert({
+            cliente = data
 
-        cliente_id: cliente.id,
-        direccion: "in",
-        tipo: "text",
-        contenido: texto
+        }
 
-    })
 
-    // 🔥 ejecutar flujo del bot
-    const respuesta = await procesarMensaje(cliente.id, texto)
-
-    if (respuesta?.tipo === "texto") {
-
-        await enviarTexto(telefono, respuesta.mensaje)
+        const tipoMensaje = message.type || "text"
+        const mediaId = message.image?.id || null
+        const texto = message.text?.body || message.image?.caption || ""
 
         await supabase.from("mensajes").insert({
             cliente_id: cliente.id,
-            direccion: "out",
-            tipo: "text",
-            contenido: respuesta.mensaje
+            direccion: "in",
+            tipo: tipoMensaje,
+            contenido: texto || "[imagen]"
         })
+        // 🔥 ejecutar flujo del bot
+        const respuesta = await procesarMensaje(cliente.id, texto, tipoMensaje, mediaId)
 
+        if (respuesta?.tipo === "texto") {
+
+            await enviarTexto(telefono, respuesta.mensaje)
+
+            await supabase.from("mensajes").insert({
+                cliente_id: cliente.id,
+                direccion: "out",
+                tipo: "text",
+                contenido: respuesta.mensaje
+            })
+
+        }
+
+        res.sendStatus(200)
+
+    } catch (error) {
+        console.error("Webhook error:", error.message)
     }
-
-    res.sendStatus(200)
-
 }
 
 module.exports = { handleWebhook }

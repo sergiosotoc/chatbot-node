@@ -1,0 +1,194 @@
+﻿<!-- public/admin/tarifas.html -->
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AHSE Admin | Tarifas</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>body{font-family:'DM Sans',sans-serif}.font-display{font-family:'Syne',sans-serif}::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#1e293b;border-radius:10px}@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}.fade-in{animation:fadeIn .4s ease forwards}</style>
+  <link rel="stylesheet" href="/theme.css">
+</head>
+<body class="bg-[#060a10] text-slate-300 h-screen overflow-hidden flex">
+<div id="sidebarContainer" class="flex shrink-0"></div>
+
+<main class="flex-1 overflow-y-auto p-8 fade-in">
+  <div class="max-w-5xl mx-auto">
+    <header class="mb-8 flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-display font-bold text-white">Tarifas</h1>
+        <p class="text-slate-500 text-sm mt-1">Tabla de precios por peso para cotización automática.</p>
+      </div>
+      <button id="btnNuevaTarifa" class="flex items-center gap-2 bg-green-500 hover:bg-green-400 text-slate-900 font-semibold px-5 py-2.5 rounded-xl transition shadow-lg shadow-green-500/20 text-sm">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+        Nueva Tarifa
+      </button>
+    </header>
+
+    <div class="bg-[#0a0f1a] border border-slate-800/60 rounded-2xl overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead class="bg-slate-900/40 text-slate-500 text-xs uppercase tracking-wider">
+            <tr>
+              <th class="px-4 py-3">Peso Máx (kg)</th>
+              <th class="px-4 py-3">Estafeta Exp. S/F</th>
+              <th class="px-4 py-3">Estafeta Exp. C/F</th>
+              <th class="px-4 py-3">Estafeta Terr. S/F</th>
+              <th class="px-4 py-3">Estafeta Terr. C/F</th>
+              <th class="px-4 py-3">FedEx Terr. S/F</th>
+              <th class="px-4 py-3">FedEx Terr. C/F</th>
+              <th class="px-4 py-3">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tablaTarifas" class="divide-y divide-slate-800/60"></tbody>
+        </table>
+      </div>
+      <div id="loadingTarifas" class="p-8 text-center text-slate-500 text-sm">Cargando...</div>
+    </div>
+  </div>
+</main>
+
+<!-- MODAL -->
+<div id="modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+  <div class="bg-[#0a0f1a] border border-slate-700 rounded-3xl p-8 w-full max-w-2xl shadow-2xl mx-4 max-h-[90vh] overflow-y-auto">
+    <div class="flex justify-between items-center mb-6">
+      <h2 id="modalTitulo" class="text-xl font-display font-bold text-white">Nueva Tarifa</h2>
+      <button id="btnCerrarModal" class="text-slate-500 hover:text-white transition">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="grid grid-cols-2 gap-4">
+      <div class="col-span-2">
+        <label class="text-xs text-slate-400 uppercase font-semibold">Peso Máximo (kg) *</label>
+        <input id="f_peso_max" type="number" class="mt-1 w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm outline-none focus:border-green-500 transition" placeholder="5">
+      </div>
+      <div>
+        <label class="text-xs text-slate-400 uppercase font-semibold">Estafeta Express S/Factura</label>
+        <input id="f_ee_sin" type="number" class="mt-1 w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm outline-none focus:border-green-500 transition" placeholder="0.00">
+      </div>
+      <div>
+        <label class="text-xs text-slate-400 uppercase font-semibold">Estafeta Express C/Factura</label>
+        <input id="f_ee_con" type="number" class="mt-1 w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm outline-none focus:border-green-500 transition" placeholder="0.00">
+      </div>
+      <div>
+        <label class="text-xs text-slate-400 uppercase font-semibold">Estafeta Terrestre S/Factura</label>
+        <input id="f_et_sin" type="number" class="mt-1 w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm outline-none focus:border-green-500 transition" placeholder="0.00">
+      </div>
+      <div>
+        <label class="text-xs text-slate-400 uppercase font-semibold">Estafeta Terrestre C/Factura</label>
+        <input id="f_et_con" type="number" class="mt-1 w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm outline-none focus:border-green-500 transition" placeholder="0.00">
+      </div>
+      <div>
+        <label class="text-xs text-slate-400 uppercase font-semibold">FedEx Terrestre S/Factura</label>
+        <input id="f_fe_sin" type="number" class="mt-1 w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm outline-none focus:border-green-500 transition" placeholder="0.00">
+      </div>
+      <div>
+        <label class="text-xs text-slate-400 uppercase font-semibold">FedEx Terrestre C/Factura</label>
+        <input id="f_fe_con" type="number" class="mt-1 w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm outline-none focus:border-green-500 transition" placeholder="0.00">
+      </div>
+    </div>
+    <div id="errModal" class="hidden mt-4 text-red-400 text-sm bg-red-400/10 px-4 py-2 rounded-xl border border-red-400/20"></div>
+    <button id="btnGuardar" class="w-full mt-6 bg-green-500 hover:bg-green-400 text-slate-900 font-bold py-3 rounded-xl transition text-sm">Guardar Tarifa</button>
+  </div>
+</div>
+
+<script src="/auth.js"></script>
+<script src="/admin/sidebar.js"></script>
+<script>
+  if (!requireRole("admin")) throw new Error();
+  renderSidebar("/admin/tarifas.html");
+  const token = getToken();
+  let editId = null;
+
+  async function cargarTarifas() {
+    const { data, error } = await fetch("/admin/tarifas", { headers: { Authorization: "Bearer " + token } })
+      .then(r => r.json()).then(d => ({ data: d })).catch(e => ({ error: e }));
+
+    document.getElementById("loadingTarifas").classList.add("hidden");
+    const tbody = document.getElementById("tablaTarifas");
+
+    if (!data?.length) {
+      tbody.innerHTML = `<tr><td colspan="8" class="px-5 py-8 text-center text-slate-500">Sin tarifas configuradas.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = data.map(t => `
+      <tr class="hover:bg-slate-800/20 transition-colors">
+        <td class="px-4 py-3 text-white font-bold">${t.peso_max} kg</td>
+        <td class="px-4 py-3">$${Number(t.estafeta_express_sin||0).toFixed(2)}</td>
+        <td class="px-4 py-3">$${Number(t.estafeta_express_con||0).toFixed(2)}</td>
+        <td class="px-4 py-3">$${Number(t.estafeta_terrestre_sin||0).toFixed(2)}</td>
+        <td class="px-4 py-3">$${Number(t.estafeta_terrestre_con||0).toFixed(2)}</td>
+        <td class="px-4 py-3">$${Number(t.fedex_terrestre_sin||0).toFixed(2)}</td>
+        <td class="px-4 py-3">$${Number(t.fedex_terrestre_con||0).toFixed(2)}</td>
+        <td class="px-4 py-3 flex gap-2">
+          <button data-id="${t.id}" class="btn-edit text-xs px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-lg transition text-white">Editar</button>
+          <button data-id="${t.id}" class="btn-del text-xs px-3 py-1.5 bg-red-500/10 text-red-400 hover:bg-red-500/20 rounded-lg transition">Eliminar</button>
+        </td>
+      </tr>
+    `).join("");
+
+    document.querySelectorAll(".btn-edit").forEach(btn => btn.addEventListener("click", () => abrirEditar(btn.dataset.id, data)));
+    document.querySelectorAll(".btn-del").forEach(btn => btn.addEventListener("click", () => eliminar(btn.dataset.id)));
+  }
+
+  function abrirEditar(id, data) {
+    const t = data.find(x => x.id === id);
+    if (!t) return;
+    editId = id;
+    document.getElementById("modalTitulo").textContent = "Editar Tarifa";
+    document.getElementById("f_peso_max").value = t.peso_max;
+    document.getElementById("f_ee_sin").value   = t.estafeta_express_sin;
+    document.getElementById("f_ee_con").value   = t.estafeta_express_con;
+    document.getElementById("f_et_sin").value   = t.estafeta_terrestre_sin;
+    document.getElementById("f_et_con").value   = t.estafeta_terrestre_con;
+    document.getElementById("f_fe_sin").value   = t.fedex_terrestre_sin;
+    document.getElementById("f_fe_con").value   = t.fedex_terrestre_con;
+    document.getElementById("modal").classList.remove("hidden");
+  }
+
+  async function eliminar(id) {
+    if (!confirm("¿Eliminar esta tarifa?")) return;
+    await fetch(`/admin/tarifas/${id}`, { method: "DELETE", headers: { Authorization: "Bearer " + token } });
+    cargarTarifas();
+  }
+
+  document.getElementById("btnNuevaTarifa").addEventListener("click", () => {
+    editId = null;
+    document.getElementById("modalTitulo").textContent = "Nueva Tarifa";
+    ["f_peso_max","f_ee_sin","f_ee_con","f_et_sin","f_et_con","f_fe_sin","f_fe_con"].forEach(id => document.getElementById(id).value = "");
+    document.getElementById("modal").classList.remove("hidden");
+  });
+
+  document.getElementById("btnCerrarModal").addEventListener("click", () => document.getElementById("modal").classList.add("hidden"));
+
+  document.getElementById("btnGuardar").addEventListener("click", async () => {
+    const err = document.getElementById("errModal");
+    err.classList.add("hidden");
+    const body = {
+      peso_max:              Number(document.getElementById("f_peso_max").value),
+      estafeta_express_sin:  Number(document.getElementById("f_ee_sin").value),
+      estafeta_express_con:  Number(document.getElementById("f_ee_con").value),
+      estafeta_terrestre_sin:Number(document.getElementById("f_et_sin").value),
+      estafeta_terrestre_con:Number(document.getElementById("f_et_con").value),
+      fedex_terrestre_sin:   Number(document.getElementById("f_fe_sin").value),
+      fedex_terrestre_con:   Number(document.getElementById("f_fe_con").value)
+    };
+    if (!body.peso_max) { err.textContent = "El peso máximo es requerido."; err.classList.remove("hidden"); return; }
+
+    const url    = editId ? `/admin/tarifas/${editId}` : "/admin/tarifas";
+    const method = editId ? "PUT" : "POST";
+    const res    = await fetch(url, { method, headers: { "Content-Type": "application/json", Authorization: "Bearer " + token }, body: JSON.stringify(body) });
+    const data   = await res.json();
+    if (!res.ok) { err.textContent = data.error || "Error al guardar."; err.classList.remove("hidden"); return; }
+    document.getElementById("modal").classList.add("hidden");
+    cargarTarifas();
+  });
+
+  cargarTarifas();
+</script>
+<script src="/theme.js"></script>
+</body>
+</html>
+

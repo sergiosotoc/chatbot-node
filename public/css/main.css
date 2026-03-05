@@ -1,0 +1,134 @@
+@import url('https://www.google.com/search?q=https://fonts.googleapis.com/css2%3Ffamily%3DInter:wght%40400%3B500%3B600%3B700%3B800%26family%3DJetBrains%2BMono:wght%40700%3B800%26display%3Dswap');
+
+:root {
+--bg-body: #0c111c;
+--bg-sidebar: #06090f;
+--bg-card: #161c28;
+--accent-primary: #10b981; /* Verde para Admin por defecto */
+--text-main: #f1f5f9;
+--text-muted: #64748b;
+--border-glass: rgba(255, 255, 255, 0.05);
+}
+
+{ margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+background-color: var(--bg-body);
+color: var(--text-main);
+font-family: 'Inter', sans-serif;
+display: flex;
+height: 100vh;
+overflow: hidden;
+}
+
+/* --- SIDEBAR TECH --- */
+.amazing-sidebar {
+width: 280px;
+background: var(--bg-sidebar);
+border-right: 1px solid var(--border-glass);
+display: flex;
+flex-direction: column;
+z-index: 50;
+}
+
+.sidebar-header {
+padding: 40px 30px;
+display: flex;
+align-items: center;
+gap: 12px;
+}
+
+.nav-list {
+list-style: none;
+padding: 0 20px;
+position: relative;
+flex: 1;
+}
+
+.nav-item { position: relative; z-index: 1; }
+
+.nav-link {
+display: flex;
+align-items: center;
+gap: 14px;
+padding: 14px 18px;
+border-radius: 12px;
+text-decoration: none;
+color: var(--text-muted);
+font-size: 14px;
+font-weight: 600;
+transition: all 0.3s ease;
+}
+
+.nav-link.active { color: #fff; }
+
+.nav-slider {
+position: absolute;
+left: 20px;
+right: 20px;
+height: 48px;
+background: rgba(255, 255, 255, 0.03);
+border: 1px solid rgba(255, 255, 255, 0.08);
+border-radius: 12px;
+transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+pointer-events: none;
+}
+
+/* --- NAVBAR SUPERIOR --- */
+.top-navbar {
+height: 80px;
+display: flex;
+align-items: center;
+justify-content: space-between;
+padding: 0 40px;
+border-bottom: 1px solid var(--border-glass);
+background: rgba(12, 17, 28, 0.8);
+backdrop-filter: blur(10px);
+}
+
+.user-profile {
+display: flex;
+align-items: center;
+gap: 15px;
+}
+
+.logout-btn {
+display: flex;
+align-items: center;
+gap: 8px;
+background: rgba(239, 68, 68, 0.1);
+color: #ef4444;
+padding: 8px 16px;
+border-radius: 10px;
+font-size: 13px;
+font-weight: 700;
+border: 1px solid rgba(239, 68, 68, 0.2);
+cursor: pointer;
+transition: all 0.2s ease;
+}
+
+.logout-btn:hover {
+background: #ef4444;
+color: white;
+}
+
+/* --- CONTENIDO --- */
+.main-viewport {
+flex: 1;
+display: flex;
+flex-direction: column;
+overflow-y: auto;
+}
+
+.content-padding {
+padding: 40px;
+}
+
+.glass-card {
+background: var(--bg-card);
+border: 1px solid var(--border-glass);
+border-radius: 24px;
+padding: 30px;
+}
+
+.font-mono { font-family: 'JetBrains Mono', monospace; font-weight: 800; }

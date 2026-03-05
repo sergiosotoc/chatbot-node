@@ -34,3 +34,5 @@ async function cotizar({ largo, ancho, alto, pesoReal, conFactura = false }) {
         fedexTerrestre: t[`fedex_terrestre${sufijo}`] + CARGO_EXCEDENTE
     };
 }
+
+module.exports = { cotizar };

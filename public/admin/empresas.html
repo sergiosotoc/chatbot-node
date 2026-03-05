@@ -1,0 +1,392 @@
+﻿<!-- public//admin/empresas.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AHSE Admin | Empresas</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'DM Sans', sans-serif; }
+    .font-display { font-family: 'Syne', sans-serif; }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+    .fade-in { animation: fadeIn 0.4s ease forwards; }
+  </style>
+  <link rel="stylesheet" href="/theme.css">
+</head>
+<body class="bg-[#060a10] text-slate-300 h-screen overflow-hidden flex">
+
+<!-- SIDEBAR -->
+<aside class="w-60 bg-[#0a0f1a] border-r border-slate-800/60 flex flex-col shrink-0">
+  <div class="p-5 border-b border-slate-800/60">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center shadow-lg shadow-green-500/30">
+        <svg class="w-4 h-4 text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-14L4 7m8 4v10M4 7v10l8 4"/></svg>
+      </div>
+      <div>
+        <p class="text-white font-display font-bold text-sm leading-none">AHSE</p>
+        <p class="text-green-500 text-[10px] font-medium tracking-widest uppercase mt-0.5">Super Admin</p>
+      </div>
+    </div>
+  </div>
+  <nav class="flex-1 p-3 space-y-0.5">
+    <a href="/admin/dashboard.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-slate-400 hover:text-white hover:bg-slate-800/50 transition-all">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+      Dashboard
+    </a>
+    <a href="/admin/empresas.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-white bg-green-500/10 border border-green-500/20">
+      <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+      Empresas
+    </a>
+    <a href="/admin/tarifas.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-slate-400 hover:text-white hover:bg-slate-800/50 transition-all">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+      Tarifas
+    </a>
+    <a href="/admin/logs.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-slate-400 hover:text-white hover:bg-slate-800/50 transition-all">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+      Logs
+    </a>
+  </nav>
+  <div class="p-3 border-t border-slate-800/60">
+    <button id="btnLogout" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-slate-500 hover:text-red-400 hover:bg-red-500/5 transition-all">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+      Cerrar sesión
+    </button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="flex-1 overflow-y-auto p-8 fade-in">
+  <div class="max-w-6xl mx-auto">
+    <header class="mb-8 flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-display font-bold text-white">Empresas</h1>
+        <p class="text-slate-500 text-sm mt-1">Gestión de clientes del sistema.</p>
+      </div>
+      <button id="btnNuevaEmpresa" class="flex items-center gap-2 bg-green-500 hover:bg-green-400 text-slate-900 font-semibold px-5 py-2.5 rounded-xl transition shadow-lg shadow-green-500/20 text-sm">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+        Nueva Empresa
+      </button>
+    </header>
+
+    <div class="bg-[#0a0f1a] border border-slate-800/60 rounded-2xl overflow-hidden">
+      <table class="w-full text-left text-sm">
+        <thead class="bg-slate-900/40 text-slate-500 text-xs uppercase tracking-wider">
+          <tr>
+            <th class="px-5 py-3">Empresa</th>
+            <th class="px-5 py-3">Correo</th>
+            <th class="px-5 py-3">WhatsApp</th>
+            <th class="px-5 py-3">Estado</th>
+            <th class="px-5 py-3">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tablaEmpresas" class="divide-y divide-slate-800/60"></tbody>
+      </table>
+      <div id="loadingEmpresas" class="p-8 text-center text-slate-500 text-sm">Cargando...</div>
+    </div>
+  </div>
+</main>
+
+<!-- MODAL NUEVA EMPRESA -->
+<div id="modalEmpresa" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+  <div class="bg-[#0a0f1a] border border-slate-700 rounded-3xl p-8 w-full max-w-2xl shadow-2xl mx-4 max-h-[90vh] overflow-y-auto">
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-xl font-display font-bold text-white">Nueva Empresa</h2>
+      <button id="btnCerrarModal" class="text-slate-500 hover:text-white transition">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="space-y-4">
+      <div class="grid grid-cols-2 gap-4">
+        <div class="col-span-2">
+          <label class="text-xs text-slate-400 uppercase font-semibold">Nombre Comercial *</label>
+          <input id="emp_nombre" class="mt-1 w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm outline-none focus:border-green-500 transition" placeholder="Mi Empresa SA">
+        </div>
+        <div>
+          <label class="text-xs text-slate-400 uppercase font-semibold">Correo</label>
+          <input id="emp_correo" type="email" class="mt-1 w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm outline-none focus:border-green-500 transition">
+        </div>
+        <div>
+          <label class="text-xs text-slate-400 uppercase font-semibold">WhatsApp</label>
+          <input id="emp_whatsapp" class="mt-1 w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm outline-none focus:border-green-500 transition" placeholder="521XXXXXXXXXX">
+        </div>
+        <div>
+          <label class="text-xs text-slate-400 uppercase font-semibold">Banco</label>
+          <input id="emp_banco" class="mt-1 w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm outline-none focus:border-green-500 transition">
+        </div>
+        <div>
+          <label class="text-xs text-slate-400 uppercase font-semibold">CLABE</label>
+          <input id="emp_clabe" class="mt-1 w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm outline-none focus:border-green-500 transition">
+        </div>
+        <div>
+          <label class="text-xs text-slate-400 uppercase font-semibold">Cuenta</label>
+          <input id="emp_cuenta" class="mt-1 w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm outline-none focus:border-green-500 transition">
+        </div>
+        <div>
+          <label class="text-xs text-slate-400 uppercase font-semibold">Titular</label>
+          <input id="emp_titular" class="mt-1 w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm outline-none focus:border-green-500 transition">
+        </div>
+      </div>
+      <div class="border-t border-slate-800 pt-4">
+        <p class="text-xs text-slate-400 uppercase font-semibold mb-3">Acceso de la Empresa <span class="text-green-400">(usuario administrador)</span></p>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="text-xs text-slate-500">Usuario *</label>
+            <input id="emp_username" class="mt-1 w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm outline-none focus:border-green-500 transition" placeholder="empresa_abc">
+          </div>
+          <div>
+            <label class="text-xs text-slate-500">Contraseña *</label>
+            <input id="emp_password" type="password" class="mt-1 w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm outline-none focus:border-green-500 transition">
+          </div>
+        </div>
+      </div>
+      <div id="errModal" class="hidden text-red-400 text-sm bg-red-400/10 px-4 py-2 rounded-xl border border-red-400/20"></div>
+      <button id="btnGuardarEmpresa" class="w-full bg-green-500 hover:bg-green-400 text-slate-900 font-bold py-3 rounded-xl transition text-sm">Crear Empresa</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL USUARIOS -->
+<div id="modalUsuarios" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+  <div class="bg-[#0a0f1a] border border-slate-700 rounded-3xl p-8 w-full max-w-3xl shadow-2xl mx-4 max-h-[90vh] overflow-y-auto">
+    <div class="flex justify-between items-center mb-6">
+      <div>
+        <h2 class="text-xl font-display font-bold text-white">Usuarios  -  <span id="nombreEmpresaModal" class="text-green-400"></span></h2>
+        <p class="text-slate-500 text-sm mt-1">Empleados con acceso al panel</p>
+      </div>
+      <div class="flex gap-3">
+        <button id="btnAgregarUsuario" class="flex items-center gap-2 bg-green-500/10 text-green-400 border border-green-500/20 px-4 py-2 rounded-xl text-sm hover:bg-green-500/20 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          Agregar
+        </button>
+        <button id="btnCerrarUsuarios" class="text-slate-500 hover:text-white transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+    </div>
+    <table class="w-full text-left text-sm">
+      <thead class="text-slate-500 text-xs uppercase tracking-wider">
+        <tr>
+          <th class="pb-3">Nombre</th>
+          <th class="pb-3">Usuario</th>
+          <th class="pb-3">Correo</th>
+          <th class="pb-3">Estado</th>
+          <th class="pb-3">Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tablaUsuarios" class="divide-y divide-slate-800/60"></tbody>
+    </table>
+    <div id="sinUsuarios" class="hidden p-6 text-center text-slate-500 text-sm">Sin usuarios registrados.</div>
+  </div>
+</div>
+
+<!-- MODAL NUEVO USUARIO -->
+<div id="modalNuevoUsuario" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm">
+  <div class="bg-[#0a0f1a] border border-slate-700 rounded-3xl p-8 w-full max-w-md shadow-2xl mx-4">
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-xl font-display font-bold text-white">Nuevo Usuario</h2>
+      <button id="btnCerrarNuevoUsuario" class="text-slate-500 hover:text-white transition">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="space-y-4">
+      <div>
+        <label class="text-xs text-slate-400 uppercase font-semibold">Nombre Completo *</label>
+        <input id="usr_nombre" class="mt-1 w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm outline-none focus:border-green-500 transition">
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="text-xs text-slate-400 uppercase font-semibold">Usuario *</label>
+          <input id="usr_username" class="mt-1 w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm outline-none focus:border-green-500 transition">
+        </div>
+        <div>
+          <label class="text-xs text-slate-400 uppercase font-semibold">Contraseña *</label>
+          <input id="usr_password" type="password" class="mt-1 w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm outline-none focus:border-green-500 transition">
+        </div>
+      </div>
+      <div>
+        <label class="text-xs text-slate-400 uppercase font-semibold">Correo</label>
+        <input id="usr_correo" type="email" class="mt-1 w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm outline-none focus:border-green-500 transition">
+      </div>
+      <div id="errUsuario" class="hidden text-red-400 text-sm bg-red-400/10 px-4 py-2 rounded-xl border border-red-400/20"></div>
+      <button id="btnCrearUsuario" class="w-full bg-green-500 hover:bg-green-400 text-slate-900 font-bold py-3 rounded-xl transition text-sm">Crear Usuario</button>
+    </div>
+  </div>
+</div>
+
+<script src="/auth.js"></script>
+<script>
+  if (!requireRole("admin")) throw new Error();
+  const token = getToken();
+  let empresaActualId = null;
+
+  document.getElementById("btnLogout").addEventListener("click", logout);
+
+  // -- Cargar empresas ----------------------
+  async function cargarEmpresas() {
+    const res  = await fetch("/empresas", { headers: { Authorization: "Bearer " + token } });
+    const data = await res.json();
+    document.getElementById("loadingEmpresas").classList.add("hidden");
+    const tbody = document.getElementById("tablaEmpresas");
+    if (!data.length) {
+      tbody.innerHTML = `<tr><td colspan="5" class="px-5 py-8 text-center text-slate-500 text-sm">Sin empresas registradas.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = data.map(e => `
+      <tr class="hover:bg-slate-800/20 transition-colors">
+        <td class="px-5 py-3 text-white font-medium">${e.nombre}</td>
+        <td class="px-5 py-3 text-slate-400">${e.correo || " - "}</td>
+        <td class="px-5 py-3 text-slate-400">${e.telefono_whatsapp || " - "}</td>
+        <td class="px-5 py-3">
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase border ${e.activo !== false ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'}">
+            ${e.activo !== false ? "Activa" : "Inactiva"}
+          </span>
+        </td>
+        <td class="px-5 py-3 flex gap-2">
+          <button data-id="${e.id}" data-nombre="${e.nombre}" class="btn-usuarios text-xs px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-lg transition text-white">Usuarios</button>
+          <button data-id="${e.id}" data-activo="${e.activo !== false}" class="btn-toggle text-xs px-3 py-1.5 rounded-lg transition ${e.activo !== false ? 'bg-red-500/10 text-red-400 hover:bg-red-500/20' : 'bg-green-500/10 text-green-400 hover:bg-green-500/20'}">
+            ${e.activo !== false ? "Suspender" : "Activar"}
+          </button>
+        </td>
+      </tr>
+    `).join("");
+
+    document.querySelectorAll(".btn-usuarios").forEach(btn => {
+      btn.addEventListener("click", () => verUsuarios(btn.dataset.id, btn.dataset.nombre));
+    });
+    document.querySelectorAll(".btn-toggle").forEach(btn => {
+      btn.addEventListener("click", () => toggleEmpresa(btn.dataset.id, btn.dataset.activo === "true"));
+    });
+  }
+
+  // -- Modal empresa ------------------------
+  document.getElementById("btnNuevaEmpresa").addEventListener("click", () => {
+    document.getElementById("modalEmpresa").classList.remove("hidden");
+  });
+  document.getElementById("btnCerrarModal").addEventListener("click", () => {
+    document.getElementById("modalEmpresa").classList.add("hidden");
+  });
+  document.getElementById("btnGuardarEmpresa").addEventListener("click", async () => {
+    const err = document.getElementById("errModal");
+    err.classList.add("hidden");
+    const body = {
+      nombre: document.getElementById("emp_nombre").value.trim(),
+      correo: document.getElementById("emp_correo").value.trim(),
+      telefono_whatsapp: document.getElementById("emp_whatsapp").value.trim(),
+      banco: document.getElementById("emp_banco").value.trim(),
+      clabe: document.getElementById("emp_clabe").value.trim(),
+      cuenta: document.getElementById("emp_cuenta").value.trim(),
+      titular: document.getElementById("emp_titular").value.trim(),
+      username: document.getElementById("emp_username").value.trim(),
+      password: document.getElementById("emp_password").value
+    };
+    if (!body.nombre || !body.username || !body.password) {
+      err.textContent = "Nombre, usuario y contraseña son obligatorios.";
+      err.classList.remove("hidden"); return;
+    }
+    const res = await fetch("/empresas", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    if (!res.ok) { err.textContent = data.error; err.classList.remove("hidden"); return; }
+    document.getElementById("modalEmpresa").classList.add("hidden");
+    cargarEmpresas();
+  });
+
+  async function toggleEmpresa(id, activo) {
+    await fetch(`/empresas/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+      body: JSON.stringify({ activo: !activo })
+    });
+    cargarEmpresas();
+  }
+
+  // -- Modal usuarios -----------------------
+  async function verUsuarios(id, nombre) {
+    empresaActualId = id;
+    document.getElementById("nombreEmpresaModal").textContent = nombre;
+    document.getElementById("modalUsuarios").classList.remove("hidden");
+    await cargarUsuarios(id);
+  }
+  document.getElementById("btnCerrarUsuarios").addEventListener("click", () => {
+    document.getElementById("modalUsuarios").classList.add("hidden");
+  });
+  document.getElementById("btnAgregarUsuario").addEventListener("click", () => {
+    document.getElementById("modalNuevoUsuario").classList.remove("hidden");
+  });
+  document.getElementById("btnCerrarNuevoUsuario").addEventListener("click", () => {
+    document.getElementById("modalNuevoUsuario").classList.add("hidden");
+  });
+
+  async function cargarUsuarios(id) {
+    const res  = await fetch(`/empresas/${id}/usuarios`, { headers: { Authorization: "Bearer " + token } });
+    const data = await res.json();
+    const tbody = document.getElementById("tablaUsuarios");
+    const empty = document.getElementById("sinUsuarios");
+    if (!data.length) { empty.classList.remove("hidden"); tbody.innerHTML = ""; return; }
+    empty.classList.add("hidden");
+    tbody.innerHTML = data.map(u => `
+      <tr class="hover:bg-slate-800/20 transition-colors">
+        <td class="py-3 text-white">${u.nombre_completo || " - "}</td>
+        <td class="py-3 text-slate-400 font-mono text-xs">${u.username}</td>
+        <td class="py-3 text-slate-400">${u.correo || " - "}</td>
+        <td class="py-3">
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase border ${u.activo ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'}">
+            ${u.activo ? "Activo" : "Inactivo"}
+          </span>
+        </td>
+        <td class="py-3">
+          <button data-id="${u.id}" data-activo="${u.activo}" class="btn-toggle-usr text-xs px-3 py-1.5 rounded-lg transition ${u.activo ? 'bg-red-500/10 text-red-400' : 'bg-green-500/10 text-green-400'}">
+            ${u.activo ? "Desactivar" : "Activar"}
+          </button>
+        </td>
+      </tr>
+    `).join("");
+    document.querySelectorAll(".btn-toggle-usr").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        await fetch(`/empresas/${empresaActualId}/usuarios/${btn.dataset.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+          body: JSON.stringify({ activo: btn.dataset.activo !== "true" })
+        });
+        cargarUsuarios(empresaActualId);
+      });
+    });
+  }
+
+  document.getElementById("btnCrearUsuario").addEventListener("click", async () => {
+    const err = document.getElementById("errUsuario");
+    err.classList.add("hidden");
+    const body = {
+      nombre_completo: document.getElementById("usr_nombre").value.trim(),
+      username: document.getElementById("usr_username").value.trim(),
+      password: document.getElementById("usr_password").value,
+      correo: document.getElementById("usr_correo").value.trim()
+    };
+    if (!body.nombre_completo || !body.username || !body.password) {
+      err.textContent = "Nombre, usuario y contraseña son obligatorios.";
+      err.classList.remove("hidden"); return;
+    }
+    const res = await fetch(`/empresas/${empresaActualId}/usuarios`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    if (!res.ok) { err.textContent = data.error; err.classList.remove("hidden"); return; }
+    document.getElementById("modalNuevoUsuario").classList.add("hidden");
+    cargarUsuarios(empresaActualId);
+  });
+
+  cargarEmpresas();
+</script>
+<script src="/theme.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,254 @@
+﻿<!-- public/empresas/perfil.html -->
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Empresa | Perfil</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>body{font-family:'DM Sans',sans-serif}.font-display{font-family:'Syne',sans-serif}::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#1e293b;border-radius:10px}@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}.fade-in{animation:fadeIn .4s ease forwards}input:-webkit-autofill{-webkit-box-shadow:0 0 0 30px #0f172a inset!important;-webkit-text-fill-color:white!important}</style>
+  <link rel="stylesheet" href="/theme.css">
+</head>
+<body class="bg-[#060a10] text-slate-300 h-screen overflow-hidden flex">
+<div id="sidebarContainer" class="flex shrink-0"></div>
+
+<main class="flex-1 overflow-y-auto p-8 fade-in">
+  <div class="max-w-3xl mx-auto">
+    <header class="mb-8">
+      <h1 class="text-2xl font-display font-bold text-white">Perfil de Empresa</h1>
+      <p class="text-slate-500 text-sm mt-1">Información pública y datos bancarios para el chatbot.</p>
+    </header>
+
+    <!-- TABS -->
+    <div class="flex gap-1 bg-slate-900/50 p-1 rounded-2xl border border-slate-800/60 mb-8 w-fit">
+      <button id="tabInfo" class="tab-btn px-5 py-2 rounded-xl text-sm font-medium transition-all bg-sky-500/10 text-sky-400 border border-sky-500/20">Información</button>
+      <button id="tabBanco" class="tab-btn px-5 py-2 rounded-xl text-sm font-medium transition-all text-slate-400 hover:text-white">Datos Bancarios</button>
+      <button id="tabAcceso" class="tab-btn px-5 py-2 rounded-xl text-sm font-medium transition-all text-slate-400 hover:text-white">Mi Acceso</button>
+    </div>
+
+    <!-- TAB: Información general -->
+    <div id="panelInfo" class="tab-panel">
+      <div class="bg-[#0a0f1a] border border-slate-800/60 rounded-3xl p-8 space-y-5">
+        <div>
+          <label class="block text-xs text-slate-400 uppercase font-semibold mb-2">Nombre Comercial</label>
+          <input id="nombre" class="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-sky-500 transition" placeholder="Mi Empresa SA de CV">
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs text-slate-400 uppercase font-semibold mb-2">Correo de contacto</label>
+            <input id="correo" type="email" class="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-sky-500 transition">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 uppercase font-semibold mb-2">WhatsApp público</label>
+            <input id="telefono_whatsapp" class="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-sky-500 transition" placeholder="521XXXXXXXXXX">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 uppercase font-semibold mb-2">Número operador (interno)</label>
+          <input id="numero_operador" class="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-sky-500 transition" placeholder="521XXXXXXXXXX">
+        </div>
+        <div id="msgInfo" class="hidden text-sm px-4 py-2.5 rounded-xl border"></div>
+        <button id="btnGuardarInfo" class="bg-sky-500 hover:bg-sky-400 text-slate-900 font-bold py-3 px-8 rounded-xl transition text-sm">Guardar Cambios</button>
+      </div>
+    </div>
+
+    <!-- TAB: Datos bancarios -->
+    <div id="panelBanco" class="tab-panel hidden">
+      <div class="bg-[#0a0f1a] border border-slate-800/60 rounded-3xl p-8 space-y-5">
+        <p class="text-xs text-slate-500 bg-sky-500/5 border border-sky-500/10 px-4 py-3 rounded-xl">
+          Estos datos se envían automáticamente al cliente cuando confirma su pedido en el chatbot.
+        </p>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs text-slate-400 uppercase font-semibold mb-2">Banco</label>
+            <input id="banco" class="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-sky-500 transition" placeholder="BBVA">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 uppercase font-semibold mb-2">Titular</label>
+            <input id="titular" class="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-sky-500 transition">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 uppercase font-semibold mb-2">Número de cuenta</label>
+            <input id="cuenta" class="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-sky-500 transition" placeholder="XXXXXXXXXXXX">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 uppercase font-semibold mb-2">CLABE interbancaria</label>
+            <input id="clabe" class="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-sky-500 transition" placeholder="XXXXXXXXXXXXXXXXXX">
+          </div>
+        </div>
+        <div id="msgBanco" class="hidden text-sm px-4 py-2.5 rounded-xl border"></div>
+        <button id="btnGuardarBanco" class="bg-sky-500 hover:bg-sky-400 text-slate-900 font-bold py-3 px-8 rounded-xl transition text-sm">Guardar Cambios</button>
+      </div>
+    </div>
+
+    <!-- TAB: Mi acceso -->
+    <div id="panelAcceso" class="tab-panel hidden">
+      <div class="bg-[#0a0f1a] border border-slate-800/60 rounded-3xl p-8 space-y-5">
+        <div>
+          <label class="block text-xs text-slate-400 uppercase font-semibold mb-2">Usuario actual</label>
+          <div id="usernameDisplay" class="w-full bg-slate-900/50 border border-slate-800 rounded-xl px-4 py-3 text-slate-400 text-sm font-mono"> - </div>
+        </div>
+        <div class="border-t border-slate-800 pt-5">
+          <p class="text-sm text-white font-medium mb-4">Cambiar contraseña</p>
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs text-slate-400 uppercase font-semibold mb-2">Contraseña actual</label>
+              <input id="passActual" type="password" class="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-sky-500 transition">
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 uppercase font-semibold mb-2">Nueva contraseña</label>
+              <input id="passNueva" type="password" class="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-sky-500 transition">
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 uppercase font-semibold mb-2">Confirmar nueva contraseña</label>
+              <input id="passConfirmar" type="password" class="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-sky-500 transition">
+            </div>
+          </div>
+        </div>
+        <div id="msgAcceso" class="hidden text-sm px-4 py-2.5 rounded-xl border"></div>
+        <button id="btnCambiarPass" class="bg-sky-500 hover:bg-sky-400 text-slate-900 font-bold py-3 px-8 rounded-xl transition text-sm">Cambiar Contraseña</button>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script src="/auth.js"></script>
+<script src="/empresas/sidebar.js"></script>
+<script>
+  if (!requireRole("empresa", "usuario")) throw new Error();
+  renderSidebar("/empresas/perfil.html");
+
+  const token = getToken();
+  const user  = getUser();
+  let empresaId = null;
+
+  document.getElementById("usernameDisplay").textContent = user?.username || " - ";
+
+  // -- Cargar datos empresa -----------------
+  async function cargarPerfil() {
+    try {
+      const res  = await fetch("/admin/empresa", { headers: { Authorization: "Bearer " + token } });
+      const data = await res.json();
+      if (!data) return;
+      empresaId = data.id;
+
+      document.getElementById("nombre").value            = data.nombre            || "";
+      document.getElementById("correo").value            = data.correo            || "";
+      document.getElementById("telefono_whatsapp").value = data.telefono_whatsapp || "";
+      document.getElementById("numero_operador").value   = data.numero_operador   || "";
+      document.getElementById("banco").value             = data.banco             || "";
+      document.getElementById("titular").value           = data.titular           || "";
+      document.getElementById("cuenta").value            = data.cuenta            || "";
+      document.getElementById("clabe").value             = data.clabe             || "";
+
+      if (data.nombre && document.getElementById("empresaNombreSidebar")) {
+        document.getElementById("empresaNombreSidebar").textContent = data.nombre;
+      }
+    } catch {}
+  }
+
+  // -- Guardar información ------------------
+  async function guardar(campos, msgId) {
+    const msgEl = document.getElementById(msgId);
+    msgEl.classList.add("hidden");
+
+    if (!empresaId) { mostrarMsg(msgId, "error", "No se encontró el ID de empresa."); return; }
+
+    const body = { id: empresaId };
+    campos.forEach(c => { body[c] = document.getElementById(c).value.trim(); });
+
+    const res  = await fetch("/admin/empresa", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+
+    if (res.ok) {
+      mostrarMsg(msgId, "exito", " Guardado correctamente.");
+      if (body.nombre && document.getElementById("empresaNombreSidebar")) {
+        document.getElementById("empresaNombreSidebar").textContent = body.nombre;
+      }
+    } else {
+      mostrarMsg(msgId, "error", data.error || "Error al guardar.");
+    }
+  }
+
+  function mostrarMsg(id, tipo, texto) {
+    const el = document.getElementById(id);
+    el.textContent = texto;
+    el.className = `text-sm px-4 py-2.5 rounded-xl border ${tipo === "exito" ? "text-green-400 bg-green-400/10 border-green-400/20" : "text-red-400 bg-red-400/10 border-red-400/20"}`;
+    el.classList.remove("hidden");
+    if (tipo === "exito") setTimeout(() => el.classList.add("hidden"), 3000);
+  }
+
+  document.getElementById("btnGuardarInfo").addEventListener("click", () => {
+    guardar(["nombre", "correo", "telefono_whatsapp", "numero_operador"], "msgInfo");
+  });
+  document.getElementById("btnGuardarBanco").addEventListener("click", () => {
+    guardar(["banco", "titular", "cuenta", "clabe"], "msgBanco");
+  });
+
+  // -- Cambiar contraseña -------------------
+  document.getElementById("btnCambiarPass").addEventListener("click", async () => {
+    const actual    = document.getElementById("passActual").value;
+    const nueva     = document.getElementById("passNueva").value;
+    const confirmar = document.getElementById("passConfirmar").value;
+
+    if (!actual || !nueva || !confirmar) { mostrarMsg("msgAcceso", "error", "Completa todos los campos."); return; }
+    if (nueva !== confirmar)             { mostrarMsg("msgAcceso", "error", "Las contraseñas no coinciden."); return; }
+    if (nueva.length < 6)               { mostrarMsg("msgAcceso", "error", "La contraseña debe tener al menos 6 caracteres."); return; }
+
+    // Verificar contraseña actual re-autenticando
+    const resLogin = await fetch("/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username: user.username, password: actual })
+    });
+    if (!resLogin.ok) { mostrarMsg("msgAcceso", "error", "La contraseña actual es incorrecta."); return; }
+
+    // Actualizar usuario propio en la API de empresas
+    const resUpd = await fetch(`/empresas/${user.empresa_id}/usuarios/${user.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+      body: JSON.stringify({ password: nueva })
+    });
+    if (resUpd.ok) {
+      document.getElementById("passActual").value = "";
+      document.getElementById("passNueva").value  = "";
+      document.getElementById("passConfirmar").value = "";
+      mostrarMsg("msgAcceso", "exito", " Contraseña actualizada. Vuelve a iniciar sesión.");
+      setTimeout(logout, 2500);
+    } else {
+      const d = await resUpd.json();
+      mostrarMsg("msgAcceso", "error", d.error || "Error al cambiar contraseña.");
+    }
+  });
+
+  // -- Tabs ---------------------------------
+  const tabs = [
+    { btn: "tabInfo",   panel: "panelInfo" },
+    { btn: "tabBanco",  panel: "panelBanco" },
+    { btn: "tabAcceso", panel: "panelAcceso" }
+  ];
+
+  tabs.forEach(({ btn, panel }) => {
+    document.getElementById(btn).addEventListener("click", () => {
+      tabs.forEach(t => {
+        document.getElementById(t.btn).className   = "tab-btn px-5 py-2 rounded-xl text-sm font-medium transition-all text-slate-400 hover:text-white";
+        document.getElementById(t.panel).classList.add("hidden");
+      });
+      document.getElementById(btn).className = "tab-btn px-5 py-2 rounded-xl text-sm font-medium transition-all bg-sky-500/10 text-sky-400 border border-sky-500/20";
+      document.getElementById(panel).classList.remove("hidden");
+    });
+  });
+
+  cargarPerfil();
+</script>
+<script src="/theme.js"></script>
+</body>
+</html>
+
+

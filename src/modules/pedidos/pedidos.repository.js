@@ -9,13 +9,13 @@ async function guardarPedidoConfirmado(clienteId, d) {
   const { data, error } = await supabase
     .from("pedidos")
     .insert({
-      folio: folio,
-      cliente_whatsapp: clienteId,
-      servicio: d.servicio,
-      precio: d.costo,
-      estatus: "pendiente_pago",
+      folio,
+      cliente_id:        clienteId,    
+      servicio:          d.servicio,
+      precio:            d.costo,
+      estatus:           "pendiente_pago",
       datos_envio: {
-        origen: d.origen,
+        origen:  d.origen,
         destino: d.destino,
         paquete: d.paquete
       }
@@ -35,8 +35,8 @@ async function obtenerPedidosPorCliente(clienteId) {
 
   const { data, error } = await supabase
     .from("pedidos")
-    .select("folio, estatus")
-    .eq("cliente_whatsapp", clienteId)
+    .select("folio, estatus, servicio, precio, created_at")
+    .eq("cliente_id", clienteId)
     .order("created_at", { ascending: false })
     .limit(5);
 
@@ -45,7 +45,7 @@ async function obtenerPedidosPorCliente(clienteId) {
     return [];
   }
 
-  return data;
+  return data || [];
 }
 
 module.exports = {

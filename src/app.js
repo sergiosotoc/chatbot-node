@@ -1,133 +1,76 @@
 /* src/app.js */
 
-const express = require("express")
-const cors = require("cors")
-const helmet = require("helmet")
+const express   = require("express");
+const cors      = require("cors");
+const helmet    = require("helmet");
+const rateLimit = require("express-rate-limit");
 
-const webhookRoutes = require("./routes/webhook.routes")
-const adminRoutes = require("./admin/admin.routes")
-const authRoutes = require("./modules/auth/auth.routes")
-const { getConfig } = require("./controllers/config.controller")
+const webhookRoutes  = require("./routes/webhook.routes");
+const adminRoutes    = require("./admin/admin.routes");
+const authRoutes     = require("./modules/auth/auth.routes");
+const empresasRoutes = require("./modules/empresa/empresas.routes");
+const { getConfig }  = require("./controllers/config.controller");
 
-const app = express()
+const app = express();
 
+app.set("trust proxy", 1);
 
-app.set("trust proxy", 1)
+app.use(rateLimit({ windowMs: 60 * 1000, max: 100 }));
 
-const rateLimit = require("express-rate-limit")
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc:    ["'self'"],
+      // En desarrollo local (http://localhost), evitar que el navegador
+      // convierta automáticamente requests a https.
+      upgradeInsecureRequests: null,
+      scriptSrc: [
+        "'self'",
+        "'unsafe-inline'",
+        "https://cdn.tailwindcss.com",
+        "https://cdn.jsdelivr.net"
+      ],
+      scriptSrcAttr: ["'unsafe-inline'"],   // ← permite onclick en HTML
+      styleSrc: [
+        "'self'",
+        "'unsafe-inline'",
+        "https://cdn.jsdelivr.net",
+        "https://fonts.googleapis.com"
+      ],
+      fontSrc:    ["'self'", "https://fonts.gstatic.com", "data:"],
+      imgSrc:     ["'self'", "data:", "https:"],
+      connectSrc: [
+        "'self'",
+        "https://*.supabase.co",
+        "wss://*.supabase.co",
+        "https://cdn.jsdelivr.net"
+      ]
+    }
+  }
+}));
 
-app.use(rateLimit({
- windowMs: 60 * 1000,
- max: 100
-}))
+app.use(cors());
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static("public"));
 
-// -----------------------------
-// SEGURIDAD (HELMET)
-// -----------------------------
+app.get("/favicon.ico", (req, res) => {
+  res.status(204).end();
+});
 
-app.use(
-helmet({
-contentSecurityPolicy: {
-directives: {
+app.get("/config", getConfig);
+app.use("/",         webhookRoutes);
+app.use("/auth",     authRoutes);
+app.use("/admin",    adminRoutes);
+app.use("/empresas", empresasRoutes);
 
-defaultSrc: ["'self'"],
+app.use((req, res) => {
+  res.status(404).json({ error: "Ruta no encontrada" });
+});
 
-// scripts permitidos
-scriptSrc: [
-"'self'",
-"'unsafe-inline'",
-"https://cdn.tailwindcss.com",
-"https://cdn.jsdelivr.net"
-],
+app.use((err, req, res, next) => {
+  console.error("Error:", err);
+  res.status(500).json({ error: "Error interno del servidor" });
+});
 
-// estilos
-styleSrc: [
-"'self'",
-"'unsafe-inline'",
-"https://cdn.jsdelivr.net",
-"https://fonts.googleapis.com"
-],
-
-// fuentes
-fontSrc: [
-"'self'",
-"https://fonts.gstatic.com",
-"data:"
-],
-
-// imágenes
-imgSrc: [
-"'self'",
-"data:",
-"https:"
-],
-
-// conexiones externas
-connectSrc: [
-"'self'",
-"https://*.supabase.co",
-"wss://*.supabase.co" // realtime websockets
-]
-
-}
-}
-})
-)
-
-
-// -----------------------------
-// MIDDLEWARES
-// -----------------------------
-
-app.use(cors())
-
-app.use(express.json({ limit: "10mb" }))
-
-app.use(express.urlencoded({ extended: true }))
-
-
-// -----------------------------
-// RUTAS API
-// -----------------------------
-
-app.use("/", webhookRoutes)
-
-app.use("/auth", authRoutes)
-
-app.use("/admin", adminRoutes)
-
-
-// -----------------------------
-// ARCHIVOS ESTÁTICOS
-// -----------------------------
-
-app.use(express.static("public"))
-
-
-// -----------------------------
-// MANEJO DE RUTAS NO EXISTENTES
-// -----------------------------
-
-app.use((req,res)=>{
-res.status(404).json({
-error:"Ruta no encontrada"
-})
-})
-
-
-// -----------------------------
-// MANEJO DE ERRORES GLOBAL
-// -----------------------------
-
-app.use((err,req,res,next)=>{
-console.error("Error:",err)
-
-res.status(500).json({
-error:"Error interno del servidor"
-})
-})
-
-app.get("/config", getConfig)
-
-
-module.exports = app
+module.exports = app;

@@ -1,0 +1,153 @@
+﻿<!-- public/empresas/dashboard.html -->
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Empresa | Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/theme.css">
+    <style>
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background-color: #0f172a;
+            color: #f1f5f9;
+        }
+
+        .font-display {
+            font-family: 'Syne', sans-serif;
+        }
+
+        .glass-card {
+            background: #1e293b;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+    </style>
+</head>
+
+<body class="h-screen overflow-hidden flex">
+
+    <div id="sidebarContainer" class="flex shrink-0"></div>
+
+    <main class="flex-1 overflow-y-auto p-10 fade-in">
+        <div class="max-w-6xl mx-auto">
+
+            <header class="mb-12">
+                <div class="flex items-center gap-4 mb-4 text-sky-500">
+                    <div class="h-[2px] w-12 bg-sky-500"></div>
+                    <span class="text-xs font-black uppercase tracking-[0.3em]">Operaciones</span>
+                </div>
+                <h1 class="text-5xl font-display font-extrabold text-white tracking-tighter">Bienvenido, <span
+                        id="empresaNombre" class="text-sky-400">Panel</span></h1>
+                <p class="text-slate-400 mt-4 text-lg">Resumen de envíos y logística para hoy.</p>
+            </header>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+                <div class="glass-card rounded-[2.5rem] p-10 shadow-xl shadow-sky-500/5">
+                    <p class="text-slate-400 text-xs font-bold uppercase tracking-widest">Envíos Hoy</p>
+                    <h2 id="statHoy" class="text-5xl font-display font-bold text-white mt-4">-</h2>
+                </div>
+                <div class="glass-card rounded-[2.5rem] p-10 bg-gradient-to-br from-amber-500/10 to-transparent">
+                    <p class="text-amber-500 text-xs font-bold uppercase tracking-widest">Pendientes</p>
+                    <h2 id="statPendientes" class="text-5xl font-display font-bold text-amber-500 mt-4">-</h2>
+                </div>
+                <div class="glass-card rounded-[2.5rem] p-10">
+                    <p class="text-sky-500 text-xs font-bold uppercase tracking-widest">Guías Enviadas</p>
+                    <h2 id="statGuias" class="text-5xl font-display font-bold text-sky-400 mt-4">-</h2>
+                </div>
+            </div>
+
+            <div class="glass-card rounded-[3rem] p-4 overflow-hidden shadow-2xl">
+                <div class="flex justify-between items-center px-8 py-6">
+                    <h3 class="text-xl font-display font-bold text-white">Actividad Reciente</h3>
+                    <a href="/empresas/pedidos.html"
+                        class="bg-white/5 hover:bg-white/10 text-white px-6 py-2.5 rounded-2xl text-sm font-bold transition">Ver
+                        todo</a>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="text-slate-500 text-[10px] font-black uppercase tracking-[0.2em]">
+                                <th class="px-8 py-4">Folio</th>
+                                <th class="px-8 py-4">Servicio</th>
+                                <th class="px-8 py-4">Importe</th>
+                                <th class="px-8 py-4">Estatus</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaPedidos" class="divide-y divide-white/5">
+                        </tbody>
+                    </table>
+                </div>
+                <div id="loadingPedidos" class="py-16 text-center text-slate-500">Cargando tablero...</div>
+            </div>
+        </div>
+    </main>
+
+    <script src="/auth.js"></script>
+    <script src="/empresas/sidebar.js"></script>
+    <script>
+        if (!requireRole("empresa", "usuario")) throw new Error();
+        renderSidebar("/empresas/dashboard.html");
+
+        const token = getToken();
+
+        async function init() {
+            try {
+                // Nombre de empresa
+                const resE = await fetch("/admin/empresa", { headers: { Authorization: "Bearer " + token } });
+                const empData = await resE.json();
+                if (empData?.nombre) document.getElementById("empresaNombre").textContent = empData.nombre;
+
+                // Pedidos
+                const resP = await fetch("/admin/pedidos", { headers: { Authorization: "Bearer " + token } });
+                const pedidos = await resP.json();
+
+                document.getElementById("loadingPedidos").classList.add("hidden");
+
+                const hoy = new Date().toDateString();
+                document.getElementById("statHoy").textContent = pedidos.filter(p => new Date(p.created_at).toDateString() === hoy).length;
+                document.getElementById("statPendientes").textContent = pedidos.filter(p => p.estatus !== "guia_enviada").length;
+                document.getElementById("statGuias").textContent = pedidos.filter(p => p.estatus === "guia_enviada").length;
+
+                const tbody = document.getElementById("tablaPedidos");
+                tbody.innerHTML = pedidos.slice(0, 8).map(p => `
+        <tr class="hover:bg-sky-500/[0.03] transition-colors">
+          <td class="px-8 py-5 font-mono text-sky-400 font-bold">${p.folio || " - "}</td>
+          <td class="px-8 py-5 text-slate-300 font-medium">${p.servicio}</td>
+          <td class="px-8 py-5 text-white font-bold">$${Number(p.precio).toFixed(2)}</td>
+          <td class="px-8 py-5">
+            <span class="px-4 py-1 rounded-xl text-[10px] font-black uppercase bg-slate-800 text-slate-400 border border-white/5">
+              ${p.estatus}
+            </span>
+          </td>
+        </tr>
+      `).join("");
+            } catch {
+                document.getElementById("loadingPedidos").textContent = "Error al sincronizar.";
+            }
+        }
+        init();
+    </script>
+</body>
+
+</html>
