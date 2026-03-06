@@ -1,4 +1,4 @@
-/* Shared interactions for visual theme */
+/* public/theme.js */
 (function () {
   function forceHttpOnLocalhost() {
     const isLocalhost = location.hostname === "localhost" || location.hostname === "127.0.0.1";

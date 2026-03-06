@@ -1,0 +1,82 @@
+/* Estilos para elementos flotantes del theme.js */
+
+.neo-theme {
+    min-height: 100vh;
+    background: #2C2F36;
+}
+
+.neo-floating-elements {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+}
+
+.neo-floating-circle {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(60px);
+    opacity: 0.3;
+    transition: transform 0.1s ease-out;
+}
+
+.c1 {
+    width: 400px;
+    height: 400px;
+    background: linear-gradient(135deg, #00ffaa, #0066ff);
+    top: -100px;
+    left: -100px;
+}
+
+.c2 {
+    width: 500px;
+    height: 500px;
+    background: linear-gradient(135deg, #ff3366, #ff00aa);
+    bottom: -150px;
+    right: -150px;
+}
+
+.c3 {
+    width: 350px;
+    height: 350px;
+    background: linear-gradient(135deg, #ffaa00, #ff5500);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+#sidebarContainer {
+    position: relative;
+    z-index: 5;
+}
+
+#sidebarContainer::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: -50px;
+    width: 140px;
+    height: 100%;
+    background: linear-gradient(90deg,
+            rgba(34, 211, 238, .25),
+            rgba(34, 211, 238, .08),
+            transparent);
+    filter: blur(80px);
+    pointer-events: none;
+}
+
+.btn-primary {
+    background: #3B82F6;
+    color: #fff;
+    border-radius: .5rem;
+    padding: .5rem 1rem;
+    transition: .2s;
+}
+
+.btn-primary:hover {
+    background: #2563EB;
+}

@@ -1,32 +1,36 @@
+﻿<!-- public/admin/empresas.html -->
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AHSE | Empresas</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/main.css">
-  <style>
-    body { font-family: 'Inter', sans-serif; }
-    .status-pill { padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-    .status-active { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
-    .status-warning { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
-    .status-info { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }
-  </style>
+  <link href="/dist/output.css" rel="stylesheet">
+  <!--   <link rel="stylesheet" href="/theme.css"> -->
+  <link rel="stylesheet" href="/css/admin.css">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 </head>
-<body class="flex">
+
+<body class="flex fade-in">
+
   <div id="sidebarContainer"></div>
-  <div class="main-viewport">
+
+  <main class="flex-1 min-w-0">
+
     <div id="navbarContainer"></div>
-    <div class="content-padding">
+
+    <div class="p-6 lg:p-10 max-w-7xl mx-auto">
       <header class="mb-10 flex items-center justify-between">
         <div>
-          <h1 class="text-3xl font-extrabold tracking-tight text-white">Empresas</h1>
-          <p class="text-slate-400 text-sm mt-1">Gestión de empresas y configuración de API WhatsApp.</p>
+          <h1 class="title-bold text-primary">Empresas</h1>
+          <p class="text-secondary text-sm mt-1">Gestión de empresas y configuración de API WhatsApp.</p>
         </div>
-        <button id="btnNuevaEmpresa" class="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-bold px-5 py-2.5 rounded-xl transition text-sm shadow-lg shadow-emerald-500/20">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+        <button id="btnNuevaEmpresa"
+          class="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-medium px-5 py-2.5 rounded-xl transition text-sm shadow-lg shadow-blue-900/20">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+          </svg>
           Nueva Empresa
         </button>
       </header>
@@ -34,8 +38,8 @@
       <div class="glass-card p-0 overflow-hidden">
         <div class="overflow-x-auto">
           <table class="w-full text-left text-sm">
-            <thead class="bg-white/5">
-              <tr class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+            <thead class="bg-[#2F343B] border-b border-[#3F444A]">
+              <tr class="text-[10px] font-bold text-muted uppercase tracking-widest">
                 <th class="px-6 py-4">Empresa</th>
                 <th class="px-6 py-4">Correo</th>
                 <th class="px-6 py-4">Contacto</th>
@@ -48,194 +52,225 @@
             <tbody id="tablaEmpresas" class="divide-y divide-white/5"></tbody>
           </table>
         </div>
-        <div id="loadingEmpresas" class="p-8 text-center text-slate-500 text-sm">Cargando...</div>
+        <div id="loadingEmpresas" class="p-8 text-center text-muted text-sm">Cargando...</div>
       </div>
     </div>
-  </div>
 
-  <!-- Modal Nueva Empresa -->
-  <div id="modalEmpresa" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-    <div class="glass-card p-8 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
-      <div class="flex justify-between items-center mb-6">
-        <h2 class="text-xl font-bold text-white">Nueva Empresa</h2>
-        <button id="btnCerrarModal" class="text-slate-500 hover:text-white transition">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-        </button>
-      </div>
-      <div class="space-y-4">
-        <div class="grid grid-cols-2 gap-4">
-          <div class="col-span-2">
-            <label class="text-xs text-slate-400 uppercase font-semibold">Nombre Comercial *</label>
-            <input id="emp_nombre" class="mt-1 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm outline-none focus:border-emerald-500 transition" placeholder="Mi Empresa SA">
-          </div>
-          <div>
-            <label class="text-xs text-slate-400 uppercase font-semibold">Correo</label>
-            <input id="emp_correo" type="email" class="mt-1 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm outline-none focus:border-emerald-500 transition">
-          </div>
-          <div>
-            <label class="text-xs text-slate-400 uppercase font-semibold">WhatsApp contacto</label>
-            <input id="emp_whatsapp" class="mt-1 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm outline-none focus:border-emerald-500 transition" placeholder="521XXXXXXXXXX">
-          </div>
+    <!-- Modal Nueva Empresa -->
+    <div id="modalEmpresa"
+      class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+      <div class="glass-card p-8 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-xl font-bold text-primary">Nueva Empresa</h2>
+          <button id="btnCerrarModal" class="text-muted hover:text-primary transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
-        <p class="text-xs text-slate-500">Los datos bancarios los ingresa la empresa en su perfil.</p>
-        <div class="border-t border-white/5 pt-4">
-          <p class="text-xs text-slate-400 uppercase font-semibold mb-3">API WhatsApp Business <span class="text-sky-400">(Meta)</span></p>
-          <p class="text-xs text-slate-500 mb-3">Cada empresa usa sus propias credenciales de WhatsApp Business.</p>
-          <div class="grid grid-cols-2 gap-4 mb-4">
-            <div>
-              <label class="text-xs text-slate-500">Phone Number ID</label>
-              <input id="emp_whatsapp_phone_id" class="mt-1 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm font-mono outline-none focus:border-emerald-500 transition" placeholder="Ej: 123456789012345">
-            </div>
-            <div>
-              <label class="text-xs text-slate-500">Access Token</label>
-              <input id="emp_whatsapp_token" type="password" class="mt-1 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm font-mono outline-none focus:border-emerald-500 transition" placeholder="Token permanente de Meta">
-            </div>
-          </div>
-          <p class="text-xs text-slate-500 italic">Opcional: puedes configurarlo después desde el botón Config API.</p>
-        </div>
-        <div class="border-t border-white/5 pt-4">
-          <p class="text-xs text-slate-400 uppercase font-semibold mb-3">Acceso de la Empresa <span class="text-emerald-400">(usuario administrador)</span></p>
+        <div class="space-y-4">
           <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="text-xs text-slate-500">Usuario *</label>
-              <input id="emp_username" class="mt-1 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm outline-none focus:border-emerald-500 transition" placeholder="empresa_abc">
+            <div class="col-span-2">
+              <label class="text-xs text-secondary uppercase font-semibold">Nombre Comercial *</label>
+              <input id="emp_nombre"
+                class="mt-1 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-primary text-sm outline-none focus:border-emerald-500 transition"
+                placeholder="Mi Empresa SA">
             </div>
             <div>
-              <label class="text-xs text-slate-500">Contraseña *</label>
-              <input id="emp_password" type="password" class="mt-1 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm outline-none focus:border-emerald-500 transition">
+              <label class="text-xs text-secondary uppercase font-semibold">Correo</label>
+              <input id="emp_correo" type="email"
+                class="mt-1 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-primary text-sm outline-none focus:border-emerald-500 transition">
+            </div>
+            <div>
+              <label class="text-xs text-secondary uppercase font-semibold">WhatsApp contacto</label>
+              <input id="emp_whatsapp"
+                class="mt-1 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-primary text-sm outline-none focus:border-emerald-500 transition"
+                placeholder="521XXXXXXXXXX">
             </div>
           </div>
+          <p class="text-xs text-muted">Los datos bancarios los ingresa la empresa en su perfil.</p>
+          <div class="border-t border-white/5 pt-4">
+            <p class="text-xs text-secondary uppercase font-semibold mb-3">API WhatsApp Business <span
+                class="text-secondary">(Meta)</span></p>
+            <p class="text-xs text-muted mb-3">Cada empresa usa sus propias credenciales de WhatsApp Business.</p>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+              <div>
+                <label class="text-xs text-muted">Phone Number ID</label>
+                <input id="emp_whatsapp_phone_id"
+                  class="mt-1 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-primary text-sm font-mono outline-none focus:border-emerald-500 transition"
+                  placeholder="Ej: 123456789012345">
+              </div>
+              <div>
+                <label class="text-xs text-muted">Access Token</label>
+                <input id="emp_whatsapp_token" type="password"
+                  class="mt-1 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-primary text-sm font-mono outline-none focus:border-emerald-500 transition"
+                  placeholder="Token permanente de Meta">
+              </div>
+            </div>
+            <p class="text-xs text-muted italic">Opcional: puedes configurarlo después desde el botón Config API.</p>
+          </div>
+          <div class="border-t border-white/5 pt-4">
+            <p class="text-xs text-secondary uppercase font-semibold mb-3">Acceso de la Empresa <span
+                class="text-secondary">(usuario administrador)</span></p>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="text-xs text-muted">Usuario *</label>
+                <input id="emp_username"
+                  class="mt-1 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-primary text-sm outline-none focus:border-emerald-500 transition"
+                  placeholder="empresa_abc">
+              </div>
+              <div>
+                <label class="text-xs text-muted">Contraseña *</label>
+                <input id="emp_password" type="password"
+                  class="mt-1 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-primary text-sm outline-none focus:border-emerald-500 transition">
+              </div>
+            </div>
+          </div>
+          <div id="errModal"
+            class="hidden text-red-400 text-sm bg-red-500/10 px-4 py-2 rounded-xl border border-red-500/20"></div>
+          <button id="btnGuardarEmpresa"
+            class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-3 rounded-xl transition text-sm">Crear
+            Empresa</button>
         </div>
-        <div id="errModal" class="hidden text-red-400 text-sm bg-red-500/10 px-4 py-2 rounded-xl border border-red-500/20"></div>
-        <button id="btnGuardarEmpresa" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-bold py-3 rounded-xl transition text-sm">Crear Empresa</button>
       </div>
     </div>
-  </div>
 
-  <!-- Modal Config WhatsApp -->
-  <div id="modalWhatsApp" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-    <div class="glass-card p-8 w-full max-w-md mx-4">
-      <div class="flex justify-between items-center mb-6">
-        <h2 class="text-xl font-bold text-white">Configurar WhatsApp - <span id="whatsappEmpresaNombre" class="text-emerald-400"></span></h2>
-        <button id="btnCerrarWhatsApp" class="text-slate-500 hover:text-white transition">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-        </button>
-      </div>
-      <div class="space-y-4">
-        <p class="text-xs text-slate-500">Credenciales de la app de WhatsApp Business (Meta Developers).</p>
-        <div>
-          <label class="text-xs text-slate-400 uppercase font-semibold">Phone Number ID *</label>
-          <input id="whatsapp_phone_id" class="mt-1 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm font-mono outline-none focus:border-emerald-500 transition" placeholder="Ej: 123456789012345">
+    <!-- Modal Config WhatsApp -->
+    <div id="modalWhatsApp"
+      class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+      <div class="glass-card p-8 w-full max-w-md mx-4">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-xl font-bold text-primary">Configurar WhatsApp - <span id="whatsappEmpresaNombre"
+              class="text-secondary"></span></h2>
+          <button id="btnCerrarWhatsApp" class="text-muted hover:text-primary transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
-        <div>
-          <label class="text-xs text-slate-400 uppercase font-semibold">Access Token *</label>
-          <input id="whatsapp_token" type="password" class="mt-1 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm font-mono outline-none focus:border-emerald-500 transition" placeholder="Token permanente">
+        <div class="space-y-4">
+          <p class="text-xs text-muted">Credenciales de la app de WhatsApp Business (Meta Developers).</p>
+          <div>
+            <label class="text-xs text-secondary uppercase font-semibold">Phone Number ID *</label>
+            <input id="whatsapp_phone_id"
+              class="mt-1 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-primary text-sm font-mono outline-none focus:border-emerald-500 transition"
+              placeholder="Ej: 123456789012345">
+          </div>
+          <div>
+            <label class="text-xs text-secondary uppercase font-semibold">Access Token *</label>
+            <input id="whatsapp_token" type="password"
+              class="mt-1 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-primary text-sm font-mono outline-none focus:border-emerald-500 transition"
+              placeholder="Token permanente">
+          </div>
+          <div id="errWhatsApp"
+            class="hidden text-red-400 text-sm bg-red-500/10 px-4 py-2 rounded-xl border border-red-500/20"></div>
+          <button id="btnGuardarWhatsApp"
+            class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-3 rounded-xl transition text-sm">Guardar
+            configuración</button>
         </div>
-        <div id="errWhatsApp" class="hidden text-red-400 text-sm bg-red-500/10 px-4 py-2 rounded-xl border border-red-500/20"></div>
-        <button id="btnGuardarWhatsApp" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-bold py-3 rounded-xl transition text-sm">Guardar configuración</button>
       </div>
     </div>
-  </div>
 
-  <script src="/auth.js"></script>
-  <script src="/js/ui-engine.js"></script>
-  <script>
-    if (typeof requireRole === 'function' && !requireRole('admin')) throw new Error();
-    window.onload = () => initAmazingInterface('admin', 'empresas');
+    <script src="/auth.js"></script>
+    <script src="/js/ui-engine.js"></script>
+    <script>
+      if (typeof requireRole === 'function' && !requireRole('admin')) throw new Error();
+      window.onload = () => initAmazingInterface('admin', 'empresas');
 
-    const token = getToken();
-    let empresaWhatsAppId = null;
+      const token = getToken();
+      let empresaWhatsAppId = null;
 
-    async function cargarEmpresas() {
-      const res = await fetch("/admin/empresas", { headers: { Authorization: "Bearer " + token } });
-      const data = await res.json();
-      document.getElementById("loadingEmpresas").classList.add("hidden");
-      const tbody = document.getElementById("tablaEmpresas");
-      if (!data.length) {
-        tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-8 text-center text-slate-500 text-sm">Sin empresas registradas.</td></tr>`;
-        return;
-      }
-      tbody.innerHTML = data.map(e => `
+      async function cargarEmpresas() {
+        const res = await fetch("/admin/empresas", { headers: { Authorization: "Bearer " + token } });
+        const data = await res.json();
+        document.getElementById("loadingEmpresas").classList.add("hidden");
+        const tbody = document.getElementById("tablaEmpresas");
+        if (!data.length) {
+          tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-8 text-center text-muted text-sm">Sin empresas registradas.</td></tr>`;
+          return;
+        }
+        tbody.innerHTML = data.map(e => `
         <tr class="hover:bg-white/[0.02]">
-          <td class="px-6 py-4 font-medium text-white">${e.nombre}</td>
-          <td class="px-6 py-4 text-slate-400">${e.correo || "-"}</td>
-          <td class="px-6 py-4 text-slate-400">${e.telefono_whatsapp || "-"}</td>
+          <td class="px-6 py-4 font-medium text-primary">${e.nombre}</td>
+          <td class="px-6 py-4 text-secondary">${e.correo || "-"}</td>
+          <td class="px-6 py-4 text-secondary">${e.telefono_whatsapp || "-"}</td>
           <td class="px-6 py-4">
             <span class="status-pill ${e.whatsapp_configurado ? 'status-active' : 'status-warning'}">${e.whatsapp_configurado ? "Configurado" : "Pendiente"}</span>
           </td>
-          <td class="px-6 py-4 text-slate-400 font-mono">${e.count_usuarios ?? 0}</td>
+          <td class="px-6 py-4 text-secondary font-mono">${e.count_usuarios ?? 0}</td>
           <td class="px-6 py-4">
             <span class="status-pill ${e.activo !== false ? 'status-active' : 'status-warning'}">${e.activo !== false ? "Activa" : "Bloqueada"}</span>
           </td>
           <td class="px-6 py-4 flex gap-2 flex-wrap">
-            <button data-id="${e.id}" data-nombre="${e.nombre}" data-phone-id="${e.whatsapp_phone_id || ''}" class="btn-whatsapp text-xs px-3 py-1.5 rounded-lg transition bg-sky-500/10 text-sky-400 border border-sky-500/20 hover:bg-sky-500/20">${e.whatsapp_configurado ? 'Editar' : 'Config'} API</button>
+            <button data-id="${e.id}" data-nombre="${e.nombre}" data-phone-id="${e.whatsapp_phone_id || ''}" class="btn-whatsapp text-xs px-3 py-1.5 rounded-lg transition bg-[#343A40] text-white border border-[#4B5563] hover:bg-[#3F444A]">${e.whatsapp_configurado ? 'Editar' : 'Config'} API</button>
             <button data-id="${e.id}" data-activo="${e.activo !== false}" class="btn-toggle text-xs px-3 py-1.5 rounded-lg transition ${e.activo !== false ? 'bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20'}">${e.activo !== false ? "Bloquear" : "Activar"}</button>
           </td>
         </tr>
       `).join("");
-      document.querySelectorAll(".btn-whatsapp").forEach(btn => {
-        btn.addEventListener("click", () => abrirModalWhatsApp(btn.dataset.id, btn.dataset.nombre, btn.dataset.phoneId || ""));
+        document.querySelectorAll(".btn-whatsapp").forEach(btn => {
+          btn.addEventListener("click", () => abrirModalWhatsApp(btn.dataset.id, btn.dataset.nombre, btn.dataset.phoneId || ""));
+        });
+        document.querySelectorAll(".btn-toggle").forEach(btn => {
+          btn.addEventListener("click", () => toggleEmpresa(btn.dataset.id, btn.dataset.activo === "true"));
+        });
+      }
+
+      document.getElementById("btnNuevaEmpresa").addEventListener("click", () => {
+        ["emp_nombre", "emp_correo", "emp_whatsapp", "emp_username", "emp_password", "emp_whatsapp_phone_id", "emp_whatsapp_token"].forEach(id => { const el = document.getElementById(id); if (el) el.value = ""; });
+        document.getElementById("modalEmpresa").classList.remove("hidden");
       });
-      document.querySelectorAll(".btn-toggle").forEach(btn => {
-        btn.addEventListener("click", () => toggleEmpresa(btn.dataset.id, btn.dataset.activo === "true"));
+      document.getElementById("btnCerrarModal").addEventListener("click", () => document.getElementById("modalEmpresa").classList.add("hidden"));
+      document.getElementById("btnGuardarEmpresa").addEventListener("click", async () => {
+        const err = document.getElementById("errModal");
+        err.classList.add("hidden");
+        const body = {
+          nombre: document.getElementById("emp_nombre").value.trim(),
+          correo: document.getElementById("emp_correo").value.trim(),
+          telefono_whatsapp: document.getElementById("emp_whatsapp").value.trim(),
+          username: document.getElementById("emp_username").value.trim(),
+          password: document.getElementById("emp_password").value
+        };
+        const phoneId = document.getElementById("emp_whatsapp_phone_id").value.trim();
+        const waToken = document.getElementById("emp_whatsapp_token").value;
+        if (phoneId) body.whatsapp_phone_id = phoneId;
+        if (waToken) body.whatsapp_token = waToken;
+        if (!body.nombre || !body.username || !body.password) { err.textContent = "Nombre, usuario y contraseña son obligatorios."; err.classList.remove("hidden"); return; }
+        const res = await fetch("/admin/empresas", { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + token }, body: JSON.stringify(body) });
+        const data = await res.json();
+        if (!res.ok) { err.textContent = data.error || "Error"; err.classList.remove("hidden"); return; }
+        document.getElementById("modalEmpresa").classList.add("hidden");
+        cargarEmpresas();
       });
-    }
 
-    document.getElementById("btnNuevaEmpresa").addEventListener("click", () => {
-      ["emp_nombre","emp_correo","emp_whatsapp","emp_username","emp_password","emp_whatsapp_phone_id","emp_whatsapp_token"].forEach(id => { const el = document.getElementById(id); if (el) el.value = ""; });
-      document.getElementById("modalEmpresa").classList.remove("hidden");
-    });
-    document.getElementById("btnCerrarModal").addEventListener("click", () => document.getElementById("modalEmpresa").classList.add("hidden"));
-    document.getElementById("btnGuardarEmpresa").addEventListener("click", async () => {
-      const err = document.getElementById("errModal");
-      err.classList.add("hidden");
-      const body = {
-        nombre: document.getElementById("emp_nombre").value.trim(),
-        correo: document.getElementById("emp_correo").value.trim(),
-        telefono_whatsapp: document.getElementById("emp_whatsapp").value.trim(),
-        username: document.getElementById("emp_username").value.trim(),
-        password: document.getElementById("emp_password").value
-      };
-      const phoneId = document.getElementById("emp_whatsapp_phone_id").value.trim();
-      const waToken = document.getElementById("emp_whatsapp_token").value;
-      if (phoneId) body.whatsapp_phone_id = phoneId;
-      if (waToken) body.whatsapp_token = waToken;
-      if (!body.nombre || !body.username || !body.password) { err.textContent = "Nombre, usuario y contraseña son obligatorios."; err.classList.remove("hidden"); return; }
-      const res = await fetch("/admin/empresas", { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + token }, body: JSON.stringify(body) });
-      const data = await res.json();
-      if (!res.ok) { err.textContent = data.error || "Error"; err.classList.remove("hidden"); return; }
-      document.getElementById("modalEmpresa").classList.add("hidden");
+      async function toggleEmpresa(id, activo) {
+        const url = activo ? `/admin/empresas/${id}/bloquear` : `/admin/empresas/${id}/activar`;
+        await fetch(url, { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + token } });
+        cargarEmpresas();
+      }
+
+      function abrirModalWhatsApp(id, nombre, phoneId) {
+        empresaWhatsAppId = id;
+        document.getElementById("whatsappEmpresaNombre").textContent = nombre;
+        document.getElementById("whatsapp_phone_id").value = phoneId || "";
+        document.getElementById("whatsapp_token").value = "";
+        document.getElementById("modalWhatsApp").classList.remove("hidden");
+      }
+      document.getElementById("btnCerrarWhatsApp").addEventListener("click", () => document.getElementById("modalWhatsApp").classList.add("hidden"));
+      document.getElementById("btnGuardarWhatsApp").addEventListener("click", async () => {
+        const err = document.getElementById("errWhatsApp");
+        err.classList.add("hidden");
+        const phoneId = document.getElementById("whatsapp_phone_id").value.trim();
+        const tokenVal = document.getElementById("whatsapp_token").value;
+        if (!phoneId || !tokenVal) { err.textContent = "Phone Number ID y Access Token son obligatorios."; err.classList.remove("hidden"); return; }
+        const res = await fetch(`/admin/empresas/${empresaWhatsAppId}/whatsapp`, { method: "PUT", headers: { "Content-Type": "application/json", Authorization: "Bearer " + token }, body: JSON.stringify({ whatsapp_phone_id: phoneId, whatsapp_token: tokenVal }) });
+        const data = await res.json();
+        if (!res.ok) { err.textContent = data.error || "Error"; err.classList.remove("hidden"); return; }
+        document.getElementById("modalWhatsApp").classList.add("hidden");
+        cargarEmpresas();
+      });
+
       cargarEmpresas();
-    });
-
-    async function toggleEmpresa(id, activo) {
-      const url = activo ? `/admin/empresas/${id}/bloquear` : `/admin/empresas/${id}/activar`;
-      await fetch(url, { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + token } });
-      cargarEmpresas();
-    }
-
-    function abrirModalWhatsApp(id, nombre, phoneId) {
-      empresaWhatsAppId = id;
-      document.getElementById("whatsappEmpresaNombre").textContent = nombre;
-      document.getElementById("whatsapp_phone_id").value = phoneId || "";
-      document.getElementById("whatsapp_token").value = "";
-      document.getElementById("modalWhatsApp").classList.remove("hidden");
-    }
-    document.getElementById("btnCerrarWhatsApp").addEventListener("click", () => document.getElementById("modalWhatsApp").classList.add("hidden"));
-    document.getElementById("btnGuardarWhatsApp").addEventListener("click", async () => {
-      const err = document.getElementById("errWhatsApp");
-      err.classList.add("hidden");
-      const phoneId = document.getElementById("whatsapp_phone_id").value.trim();
-      const tokenVal = document.getElementById("whatsapp_token").value;
-      if (!phoneId || !tokenVal) { err.textContent = "Phone Number ID y Access Token son obligatorios."; err.classList.remove("hidden"); return; }
-      const res = await fetch(`/admin/empresas/${empresaWhatsAppId}/whatsapp`, { method: "PUT", headers: { "Content-Type": "application/json", Authorization: "Bearer " + token }, body: JSON.stringify({ whatsapp_phone_id: phoneId, whatsapp_token: tokenVal }) });
-      const data = await res.json();
-      if (!res.ok) { err.textContent = data.error || "Error"; err.classList.remove("hidden"); return; }
-      document.getElementById("modalWhatsApp").classList.add("hidden");
-      cargarEmpresas();
-    });
-
-    cargarEmpresas();
-  </script>
+    </script>
 </body>
+
 </html>

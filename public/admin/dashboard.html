@@ -1,340 +1,376 @@
+﻿<!-- public/admin/dashboard.html -->
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AHSE | Panel de Administración</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/main.css">
-  <style>
-    body { font-family: 'Inter', sans-serif; }
-    .status-pill { padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-    .status-active { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
-    .status-warning { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
-    .status-info { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }
-    .kpi-card { transition: transform 0.2s, box-shadow 0.2s; }
-    .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
-    .quick-link { transition: all 0.2s; }
-    .quick-link:hover { border-color: var(--accent-primary); background: rgba(16, 185, 129, 0.05); }
-  </style>
+
+  <!-- Tailwind CSS compilado localmente -->
+  <link href="/dist/output.css" rel="stylesheet">
+
+  <!-- Fuentes de Google - Roboto -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+  <!-- Estilos personalizados del tema -->
+<!--   <link rel="stylesheet" href="/theme.css"> -->
+  <link rel="stylesheet" href="/css/admin.css">
+
 </head>
-<body class="flex">
+
+<body class="flex fade-in">
+  <!-- Sidebar Container -->
   <div id="sidebarContainer"></div>
 
-  <div class="main-viewport">
-    <div id="navbarContainer"></div>
-
-    <div class="content-padding">
-      <!-- Header -->
-      <header class="mb-10">
-        <h1 class="text-3xl font-extrabold tracking-tight text-white">Panel de Administración</h1>
-        <p class="text-slate-400 text-sm mt-1" id="fechaHoy"></p>
-      </header>
-
-      <!-- Loading -->
-      <div id="loadingState" class="flex items-center justify-center py-20">
-        <div class="animate-spin w-10 h-10 border-2 border-emerald-500 border-t-transparent rounded-full"></div>
+  <main class="flex-1 min-w-0">
+    <!-- Navbar -->
+    <nav
+      class="h-16 border-b border-white/10 flex items-center justify-between px-8 #2F343B backdrop-blur-xl shadow-lg shadow-black/20 sticky top-0 z-50">
+      <div class="flex items-center gap-4">
+        <span class="text-emerald-500 font-bold tracking-tighter text-xl">AHSE</span>
+        <div class="h-4 w-px bg-white/10"></div>
+        <span class="text-muted uppercase tracking-widest">Admin Control</span>
       </div>
 
-      <div id="dashboardContent" class="hidden">
-        <!-- KPIs -->
-        <section class="mb-10">
-          <h2 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-6">Indicadores generales</h2>
-          <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            <div class="glass-card kpi-card">
-              <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Empresas activas</p>
-              <p class="font-mono text-3xl mt-2 text-white" id="stat-empresas">0</p>
-              <p class="text-[10px] text-slate-500 mt-1">de <span id="stat-total-empresas">0</span> total</p>
+      <!-- Botón de cerrar sesión -->
+      <button onclick="cerrarSesion()"
+        class="flex items-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-lg transition-all duration-200 active:scale-95">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+        </svg>
+        <span class="text-regular text-red-400">Cerrar sesión</span>
+      </button>
+    </nav>
+
+    <div class="p-6 lg:p-10 max-w-7xl mx-auto fade-up">
+      <!-- Header -->
+      <header class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <h1 class="title-bold text-primary">Panel de Administración</h1>
+          <p id="fechaHoy" class="text-muted mt-1">Cargando fecha...</p>
+        </div>
+        <button onclick="cargarDashboard()"
+          class="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-all duration-200 active:scale-95">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          <span class="text-regular">Sincronizar</span>
+        </button>
+      </header>
+
+      <!-- Loading State -->
+      <div id="loadingState" class="flex flex-col items-center justify-center py-24">
+        <div class="relative">
+          <div class="w-12 h-12 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin"></div>
+        </div>
+        <p class="text-light text-muted">Obteniendo métricas...</p>
+      </div>
+
+      <div id="dashboardContent" class="hidden space-y-10 fade-in">
+        <!-- KPI Grid -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div class="glass-card kpi-card">
+            <span class="text-muted uppercase tracking-widest">Empresas Activas</span>
+            <div class="flex items-baseline gap-2 mt-2">
+              <span id="stat-empresas" class="metric-number text-primary">0</span>
+              <span class="text-muted">/ <span id="stat-total-empresas">0</span></span>
             </div>
-            <div class="glass-card kpi-card">
-              <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Mensajes hoy</p>
-              <p class="font-mono text-3xl mt-2 text-sky-400" id="stat-mensajes-dia">0</p>
-            </div>
-            <div class="glass-card kpi-card">
-              <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Mensajes semana</p>
-              <p class="font-mono text-3xl mt-2 text-emerald-400" id="stat-mensajes-semana">0</p>
-            </div>
-            <div class="glass-card kpi-card">
-              <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Mensajes mes</p>
-              <p class="font-mono text-3xl mt-2 text-amber-400" id="stat-mensajes-mes">0</p>
-            </div>
-            <div class="glass-card kpi-card">
-              <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Mensajes año</p>
-              <p class="font-mono text-3xl mt-2 text-violet-400" id="stat-mensajes-anio">0</p>
-            </div>
+          </div>
+          <div class="glass-card kpi-card">
+            <span class="text-muted uppercase tracking-widest">Mensajes Hoy</span>
+            <p id="stat-mensajes-dia" class="metric-number text-primary">0</p>
+          </div>
+          <div class="glass-card kpi-card">
+            <span class="text-muted uppercase tracking-widest">Semana</span>
+            <p id="stat-mensajes-semana" class="metric-number text-primary">0</p>
+          </div>
+          <div class="glass-card kpi-card">
+            <span class="text-muted uppercase tracking-widest">Mensual</span>
+            <p id="stat-mensajes-mes" class="metric-number text-primary">0</p>
+          </div>
+          <div class="glass-card kpi-card">
+            <span class="text-muted uppercase tracking-widest">Anual</span>
+            <p id="stat-mensajes-anio" class="metric-number text-primary">0</p>
           </div>
         </section>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <!-- Columna principal -->
+          <!-- Columna Principal -->
           <div class="lg:col-span-2 space-y-8">
-            <!-- Alertas -->
-            <section id="section-alertas">
-              <h2 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-4">Alertas y notificaciones</h2>
-              <div id="alertasContainer" class="glass-card p-0 overflow-hidden">
-                <div class="px-6 py-4 border-b border-white/5">
-                  <h3 class="font-bold text-white text-sm">Estado del sistema</h3>
-                </div>
-                <div id="alertasLista" class="p-4 space-y-3"></div>
-                <div id="alertasVacio" class="hidden p-8 text-center text-slate-500 text-sm">Sin alertas pendientes.</div>
+            <!-- Notificaciones Críticas -->
+            <section>
+              <div class="flex items-center justify-between mb-4">
+                <h2 class="subtitle-medium text-primary">Notificaciones Críticas</h2>
+                <span id="alertCount"
+                  class="px-2 py-0.5 rounded-md bg-red-500/10 text-red-500 text-light font-medium">0</span>
+              </div>
+              <div id="alertasLista" class="space-y-3"></div>
+              <div id="alertasVacio"
+                class="glass-card flex flex-col items-center justify-center py-10 border-dashed border-white/5 opacity-50 hidden">
+                <p class="text-light text-muted">No hay alertas pendientes</p>
               </div>
             </section>
 
-            <!-- Errores del sistema (soporte) -->
+            <!-- Logs Soporte -->
             <section>
-              <h2 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-4">Errores recientes (soporte)</h2>
+              <div class="flex items-center justify-between mb-4">
+                <h2 class="subtitle-medium text-primary">Logs Recientes (Soporte)</h2>
+                <a href="/admin/logs.html"
+                  class="text-light font-medium text-emerald-500 uppercase tracking-widest hover:text-emerald-400 transition-colors">Ver
+                  historial ?</a>
+              </div>
               <div class="glass-card p-0 overflow-hidden">
-                <div class="px-6 py-4 border-b border-white/5 flex justify-between items-center">
-                  <h3 class="font-bold text-white text-sm">Logs del sistema</h3>
-                  <a href="/admin/logs.html" class="text-xs font-semibold text-emerald-500 hover:underline">Ver todo</a>
+                <div id="erroresLista" class="divide-y divide-white/5 max-h-80 overflow-y-auto"></div>
+                <div id="erroresVacio" class="hidden py-12 text-center text-light text-muted">Sin logs registrados.
                 </div>
-                <div id="erroresLista" class="max-h-64 overflow-y-auto"></div>
-                <div id="erroresVacio" class="hidden p-6 text-center text-slate-500 text-sm">Sin errores registrados.</div>
               </div>
             </section>
           </div>
 
-          <!-- Columna lateral -->
+          <!-- Columna Lateral -->
           <div class="space-y-8">
-            <!-- Estado de servicios -->
+            <!-- Estado Servicios -->
             <section>
-              <h2 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-4">Servicios</h2>
-              <div class="glass-card">
-                <div id="serviciosLista" class="space-y-4"></div>
+              <h2 class="subtitle-medium text-primary">Infraestructura</h2>
+              <div class="glass-card space-y-4" id="serviciosLista">
+                <!-- Render JS -->
               </div>
             </section>
 
-            <!-- Accesos rápidos -->
+            <!-- Accesos Rápidos -->
             <section>
-              <h2 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-4">Accesos rápidos</h2>
+              <h2 class="subtitle-medium text-primary">Accesos Directos</h2>
               <div class="grid grid-cols-2 gap-3">
-                <a href="/admin/empresas.html" class="quick-link glass-card p-4 flex items-center gap-3 border border-white/5 rounded-xl">
-                  <div class="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5"/></svg>
+                <a href="/admin/empresas.html"
+                  class="quick-link glass-card p-4 flex flex-col gap-3 transition-all duration-200 hover:scale-105">
+                  <div class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5" stroke-width="2" />
+                    </svg>
                   </div>
-                  <span class="text-sm font-semibold text-white">Empresas</span>
+                  <span class="text-regular font-medium text-primary">Empresas</span>
                 </a>
-                <a href="/admin/logs.html" class="quick-link glass-card p-4 flex items-center gap-3 border border-white/5 rounded-xl">
-                  <div class="w-10 h-10 rounded-xl bg-violet-500/10 flex items-center justify-center text-violet-500">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                <a href="/admin/logs.html"
+                  class="quick-link glass-card p-4 flex flex-col gap-3 transition-all duration-200 hover:scale-105">
+                  <div class="w-8 h-8 rounded-lg bg-violet-500/10 flex items-center justify-center text-violet-500">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2"
+                        stroke-width="2" />
+                    </svg>
                   </div>
-                  <span class="text-sm font-semibold text-white">Soporte / Errores</span>
+                  <span class="text-regular font-medium text-primary">Logs</span>
                 </a>
-              </div>
-            </section>
-
-            <!-- Estado del sistema -->
-            <section>
-              <h2 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-4">Estado del sistema</h2>
-              <div class="glass-card p-4 space-y-3">
-                <p class="text-xs text-slate-500">Estado de servicios y notificaciones del sistema.</p>
-                <div id="notificacionesResumen" class="space-y-2"></div>
               </div>
             </section>
           </div>
         </div>
 
-        <!-- Tabla empresas recientes -->
-        <section class="mt-10">
-          <div class="flex justify-between items-center mb-4">
-            <h2 class="text-sm font-bold text-slate-500 uppercase tracking-widest">Empresas recientes</h2>
-            <a href="/admin/empresas.html" class="text-xs font-semibold text-emerald-500 hover:underline">Ver todas</a>
+        <!-- Tabla Empresas Recientes -->
+        <section>
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="subtitle-medium text-primary">Gestión de Empresas Recientes</h2>
+            <a href="/admin/empresas.html"
+              class="text-light font-medium text-emerald-500 uppercase tracking-widest hover:text-emerald-400 transition-colors">Todas
+              las empresas ?</a>
           </div>
-          <div class="glass-card p-0 overflow-hidden">
-            <table class="w-full text-left text-sm">
-              <thead class="bg-white/5">
-                <tr class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                  <th class="px-6 py-4">Empresa</th>
-                  <th class="px-6 py-4">Usuarios</th>
-                  <th class="px-6 py-4">Correo</th>
-                  <th class="px-6 py-4">WhatsApp</th>
-                  <th class="px-6 py-4">Estado</th>
-                  <th class="px-6 py-4">Acciones</th>
+          <div class="glass-card p-0 overflow-hidden overflow-x-auto">
+            <table class="w-full text-left">
+              <thead>
+                <tr class="bg-white/[0.02] text-muted font-medium uppercase tracking-widest">
+                  <th class="px-6 py-4 text-light">Empresa</th>
+                  <th class="px-6 py-4 text-light">Usuarios</th>
+                  <th class="px-6 py-4 text-light">Contacto</th>
+                  <th class="px-6 py-4 text-light">Estado</th>
+                  <th class="px-6 py-4 text-light"></th>
                 </tr>
               </thead>
               <tbody id="tablaEmpresas" class="divide-y divide-white/5"></tbody>
             </table>
-            <div id="empresasVacio" class="hidden p-8 text-center text-slate-500 text-sm">Sin empresas registradas.</div>
+            <div id="empresasVacio" class="hidden py-12 text-center text-light text-muted">No hay registros
+              recientes.</div>
           </div>
         </section>
 
         <!-- Mensajes por empresa -->
-        <section class="mt-8">
-          <div class="flex justify-between items-center mb-4">
-            <h2 class="text-sm font-bold text-slate-500 uppercase tracking-widest">Mensajes por empresa</h2>
-          </div>
-          <div class="glass-card p-0 overflow-hidden">
-            <table class="w-full text-left text-sm">
-              <thead class="bg-white/5">
-                <tr class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                  <th class="px-6 py-4">Empresa</th>
-                  <th class="px-6 py-4">Hoy</th>
-                  <th class="px-6 py-4">Semana</th>
-                  <th class="px-6 py-4">Mes</th>
-                  <th class="px-6 py-4">Año</th>
+        <section>
+          <h2 class="subtitle-medium text-primary">Desglose de Tráfico por Empresa
+          </h2>
+          <div class="glass-card p-0 overflow-hidden overflow-x-auto">
+            <table class="w-full text-left">
+              <thead>
+                <tr class="bg-white/[0.02] text-muted font-medium uppercase tracking-widest">
+                  <th class="px-6 py-4 text-light">Empresa</th>
+                  <th class="px-6 py-4 text-light">Hoy</th>
+                  <th class="px-6 py-4 text-light">Semana</th>
+                  <th class="px-6 py-4 text-light">Mes</th>
+                  <th class="px-6 py-4 text-light">Año</th>
                 </tr>
               </thead>
               <tbody id="tablaMensajesEmpresa" class="divide-y divide-white/5"></tbody>
             </table>
-            <div id="mensajesEmpresaVacio" class="hidden p-8 text-center text-slate-500 text-sm">Sin datos.</div>
           </div>
         </section>
       </div>
     </div>
-  </div>
+  </main>
 
   <script src="/auth.js"></script>
   <script src="/js/ui-engine.js"></script>
   <script>
     if (typeof requireRole === 'function' && !requireRole('admin')) throw new Error();
 
-    function formatFecha(str) {
-      if (!str) return '-';
-      const d = new Date(str);
-      return d.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+    // Función para cerrar sesión
+    function cerrarSesion() {
+      localStorage.removeItem('token');
+      window.location.href = '/login.html';
     }
 
-    function formatRelativo(str) {
-      if (!str) return '';
-      const d = new Date(str);
-      const seg = Math.floor((Date.now() - d) / 1000);
-      if (seg < 60) return 'hace un momento';
-      if (seg < 3600) return `hace ${Math.floor(seg / 60)} min`;
-      return formatFecha(str);
+    const CONFIG = {
+      LOCALE: 'es-MX',
+      COLORS: ['bg-emerald-500', 'bg-sky-500', 'bg-violet-500', 'bg-amber-500', 'bg-rose-500']
+    };
+
+    function formatFecha(str) {
+      if (!str) return '-';
+      return new Date(str).toLocaleDateString(CONFIG.LOCALE, { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
     }
 
     async function cargarDashboard() {
-      const token = getToken();
-      const res = await fetch('/admin/dashboard', { headers: { Authorization: 'Bearer ' + token } });
-      if (!res.ok) {
-        document.getElementById('loadingState').innerHTML = '<p class="text-red-400">Error al cargar el dashboard.</p>';
-        return;
-      }
-      const data = await res.json();
+      const loading = document.getElementById('loadingState');
+      const content = document.getElementById('dashboardContent');
 
-      document.getElementById('loadingState').classList.add('hidden');
-      document.getElementById('dashboardContent').classList.remove('hidden');
+      try {
+        loading.classList.remove('hidden');
+        content.classList.add('hidden');
 
-      // KPIs
-      document.getElementById('stat-empresas').textContent = data.stats.empresas_activas ?? 0;
-      document.getElementById('stat-total-empresas').textContent = data.stats.total_empresas ?? 0;
-      document.getElementById('stat-mensajes-dia').textContent = data.stats.mensajes_dia ?? 0;
-      document.getElementById('stat-mensajes-semana').textContent = data.stats.mensajes_semana ?? 0;
-      document.getElementById('stat-mensajes-mes').textContent = data.stats.mensajes_mes ?? 0;
-      document.getElementById('stat-mensajes-anio').textContent = data.stats.mensajes_anio ?? 0;
+        const token = getToken();
+        const res = await fetch('/admin/dashboard', { headers: { Authorization: 'Bearer ' + token } });
+        if (!res.ok) throw new Error('Auth fail');
+        const data = await res.json();
 
-      // Fecha
-      document.getElementById('fechaHoy').textContent = new Date().toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' });
+        // KPIs
+        const stats = data.stats || {};
+        document.getElementById('stat-empresas').textContent = stats.empresas_activas ?? 0;
+        document.getElementById('stat-total-empresas').textContent = stats.total_empresas ?? 0;
+        document.getElementById('stat-mensajes-dia').textContent = (stats.mensajes_dia ?? 0).toLocaleString();
+        document.getElementById('stat-mensajes-semana').textContent = (stats.mensajes_semana ?? 0).toLocaleString();
+        document.getElementById('stat-mensajes-mes').textContent = (stats.mensajes_mes ?? 0).toLocaleString();
+        document.getElementById('stat-mensajes-anio').textContent = (stats.mensajes_anio ?? 0).toLocaleString();
 
-      // Alertas / Notificaciones
-      const alertasLista = document.getElementById('alertasLista');
-      const alertasVacio = document.getElementById('alertasVacio');
-      const notifs = data.notificaciones || [];
-      if (notifs.length > 0) {
-        alertasVacio.classList.add('hidden');
-        alertasLista.innerHTML = notifs.map(a => {
-          const cls = a.tipo === 'error' ? 'bg-red-500/5 border-red-500/20' : a.tipo === 'warning' ? 'bg-amber-500/5 border-amber-500/20' : 'bg-sky-500/5 border-sky-500/20';
-          return `<div class="flex items-center justify-between p-4 rounded-xl border ${cls}"><div class="flex items-center gap-3"><div class="w-2 h-2 rounded-full ${a.tipo === 'error' ? 'bg-red-500' : a.tipo === 'warning' ? 'bg-amber-500' : 'bg-sky-500'}"></div><div><p class="text-xs font-bold text-slate-400">${a.titulo || ''}</p><p class="text-sm text-white">${a.mensaje || ''}</p></div></div></div>`;
-        }).join('');
-      } else {
-        alertasLista.innerHTML = '';
-        alertasVacio.classList.remove('hidden');
-        alertasVacio.textContent = 'Sin alertas pendientes.';
-      }
+        document.getElementById('fechaHoy').textContent = new Date().toLocaleDateString(CONFIG.LOCALE, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
-      // Notificaciones resumen
-      const notifResumen = document.getElementById('notificacionesResumen');
-      notifResumen.innerHTML = notifs.length ? notifs.slice(0, 3).map(n => `<p class="text-xs ${n.tipo === 'error' ? 'text-red-400' : n.tipo === 'warning' ? 'text-amber-400' : 'text-sky-400'}">${n.titulo}: ${n.mensaje}</p>`).join('') : '<p class="text-xs text-slate-500">Sistema operativo.</p>';
+        // Alertas
+        const alertasLista = document.getElementById('alertasLista');
+        const countBadge = document.getElementById('alertCount');
+        const notifs = data.notificaciones || [];
 
-      // Servicios
-      const h = data.servicios || {};
-      document.getElementById('serviciosLista').innerHTML = `
-        <div class="flex justify-between items-center">
-          <span class="text-sm text-slate-400">WhatsApp API</span>
-          <span class="status-pill ${h.whatsapp ? 'status-active' : 'status-warning'}">${h.whatsapp ? 'Conectado' : 'No configurado'}</span>
-        </div>
-        <div class="flex justify-between items-center">
-          <span class="text-sm text-slate-400">Base de datos</span>
-          <span class="status-pill status-active">Operativo</span>
-        </div>
-        <div class="flex justify-between items-center">
-          <span class="text-sm text-slate-400">Sistema</span>
-          <span class="status-pill status-active">Uptime ${Math.floor((h.uptime || 0) / 60)} min</span>
-        </div>
-      `;
+        countBadge.textContent = notifs.length;
+        document.getElementById('alertasVacio').classList.toggle('hidden', notifs.length > 0);
 
-      // Errores
-      const erroresLista = document.getElementById('erroresLista');
-      const erroresVacio = document.getElementById('erroresVacio');
-      const errs = data.errores || [];
-      if (errs.length > 0) {
-        erroresVacio.classList.add('hidden');
-        erroresLista.innerHTML = errs.slice(0, 8).map(e => `
-          <div class="flex items-center justify-between px-6 py-3 hover:bg-white/[0.02] border-b border-white/5 last:border-0">
-            <div class="min-w-0 flex-1">
-              <p class="text-xs text-white truncate">${(e.mensaje || '').substring(0, 80)}</p>
-              <p class="text-[10px] text-slate-500">${e.codigo || ''} • ${formatFecha(e.created_at)}</p>
+        alertasLista.innerHTML = notifs.map(n => `
+          <div class="glass-card flex items-start gap-4 p-4 border-l-4 ${n.tipo === 'error' ? 'border-l-red-500' : 'border-l-amber-500'}">
+            <div class="mt-1 w-2 h-2 rounded-full ${n.tipo === 'error' ? 'bg-red-500 animate-pulse' : 'bg-amber-500'}"></div>
+            <div>
+              <h4 class="text-regular font-medium text-primary uppercase tracking-tight">${n.titulo}</h4>
+              <p class="text-light text-muted mt-1">${n.mensaje}</p>
             </div>
-            <span class="status-pill ml-2 ${e.nivel === 'critical' ? 'status-warning' : 'status-info'}">${e.nivel || 'error'}</span>
           </div>
         `).join('');
-      } else {
-        erroresLista.innerHTML = '';
-        erroresVacio.classList.remove('hidden');
-      }
 
-      // Empresas
-      const tbodyEmp = document.getElementById('tablaEmpresas');
-      const empVacio = document.getElementById('empresasVacio');
-      if (data.empresas && data.empresas.length > 0) {
-        empVacio.classList.add('hidden');
-        tbodyEmp.innerHTML = data.empresas.map(e => `
-          <tr class="hover:bg-white/[0.02]">
+        // Servicios
+        const srv = data.servicios || {};
+        document.getElementById('serviciosLista').innerHTML = `
+          <div class="flex items-center justify-between">
+            <span class="text-regular text-secondary">WhatsApp Engine</span>
+            <div class="status-pill ${srv.whatsapp ? 'status-active' : 'status-warning'}">
+              <div class="w-1 h-1 rounded-full bg-current"></div> ${srv.whatsapp ? 'Conectado' : 'Revisar'}
+            </div>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-regular text-secondary">Database Cluster</span>
+            <div class="status-pill status-active"><div class="w-1 h-1 rounded-full bg-current"></div> Operativo</div>
+          </div>
+          <div class="pt-4 border-t border-white/5 flex justify-between items-center">
+            <span class="text-muted">Server Uptime</span>
+            <span class="text-regular text-secondary">${Math.floor((srv.uptime || 0) / 60)}m</span>
+          </div>
+        `;
+
+        // Errores
+        const errs = data.errores || [];
+        document.getElementById('erroresVacio').classList.toggle('hidden', errs.length > 0);
+        document.getElementById('erroresLista').innerHTML = errs.slice(0, 10).map(e => `
+          <div class="p-4 hover:bg-white/[0.02] transition-colors group">
+            <div class="flex justify-between items-start gap-2">
+              <p class="text-regular text-secondary">${e.mensaje}</p>
+              <span class="status-pill ${e.nivel === 'critical' ? 'status-warning' : 'status-info'}">${e.nivel}</span>
+            </div>
+            <p class="text-light text-muted">${formatFecha(e.created_at)}</p>
+          </div>
+        `).join('');
+
+        // Empresas
+        const empresas = data.empresas || [];
+        document.getElementById('empresasVacio').classList.toggle('hidden', empresas.length > 0);
+        document.getElementById('tablaEmpresas').innerHTML = empresas.map((e, idx) => `
+          <tr class="hover:bg-white/[0.03] transition-colors group">
             <td class="px-6 py-4">
-              <p class="font-medium text-white">${e.nombre}</p>
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg ${CONFIG.COLORS[idx % 5]}/20 flex items-center justify-center text-secondary font-medium">
+                  ${e.nombre.substring(0, 2).toUpperCase()}
+                </div>
+                <span class="text-regular font-medium text-primary">${e.nombre}</span>
+              </div>
             </td>
-            <td class="px-6 py-4 text-slate-400 font-mono">${e.count_usuarios ?? 0}</td>
-            <td class="px-6 py-4 text-slate-400">${e.correo || '-'}</td>
-            <td class="px-6 py-4 text-slate-400">${e.telefono_whatsapp || '-'}</td>
+            <td class="px-6 py-4 text-regular text-secondary">${e.count_usuarios ?? 0}</td>
             <td class="px-6 py-4">
-              <span class="status-pill ${e.activo !== false ? 'status-active' : 'status-warning'}">${e.activo !== false ? 'Activa' : 'Inactiva'}</span>
+              <p class="text-regular text-primary">${e.correo || '-'}</p>
+              <p class="text-light text-muted">${e.telefono_whatsapp || 'Sin WhatsApp'}</p>
             </td>
             <td class="px-6 py-4">
-              <a href="/admin/empresas.html" class="text-xs font-bold text-emerald-500 hover:underline">Gestionar</a>
+              <span class="status-pill ${e.activo !== false ? 'status-active' : 'status-warning'}">
+                ${e.activo !== false ? 'Activa' : 'Pausada'}
+              </span>
+            </td>
+            <td class="px-6 py-4 text-right">
+              <a href="/admin/empresas.html" class="opacity-0 group-hover:opacity-100 transition-opacity text-light font-medium text-emerald-500 uppercase tracking-widest">Gestionar</a>
             </td>
           </tr>
         `).join('');
-      } else {
-        tbodyEmp.innerHTML = '';
-        empVacio.classList.remove('hidden');
-      }
 
-      // Mensajes por empresa
-      const tbodyMsg = document.getElementById('tablaMensajesEmpresa');
-      const msgVacio = document.getElementById('mensajesEmpresaVacio');
-      const mpe = data.mensajes_por_empresa || [];
-      if (mpe.length > 0) {
-        msgVacio.classList.add('hidden');
-        tbodyMsg.innerHTML = mpe.map(m => `
+        // Tráfico por empresa
+        const traffic = data.mensajes_por_empresa || [];
+        document.getElementById('tablaMensajesEmpresa').innerHTML = traffic.map(m => `
           <tr class="hover:bg-white/[0.02]">
-            <td class="px-6 py-4 font-medium text-white">${m.empresa_nombre || '-'}</td>
-            <td class="px-6 py-4 text-slate-400">${m.mensajes_dia ?? 0}</td>
-            <td class="px-6 py-4 text-slate-400">${m.mensajes_semana ?? 0}</td>
-            <td class="px-6 py-4 text-slate-400">${m.mensajes_mes ?? 0}</td>
-            <td class="px-6 py-4 text-slate-400">${m.mensajes_anio ?? 0}</td>
+            <td class="px-6 py-4 text-regular font-medium text-primary">${m.empresa_nombre}</td>
+            <td class="px-6 py-4 text-regular text-secondary">${m.mensajes_dia ?? 0}</td>
+            <td class="px-6 py-4 text-regular text-secondary">${m.mensajes_semana ?? 0}</td>
+            <td class="px-6 py-4 text-regular text-secondary">${m.mensajes_mes ?? 0}</td>
+            <td class="px-6 py-4 text-regular text-muted">${m.mensajes_anio ?? 0}</td>
           </tr>
         `).join('');
-      } else {
-        tbodyMsg.innerHTML = '';
-        msgVacio.classList.remove('hidden');
+
+      } catch (err) {
+        loading.innerHTML = `<div class="text-center"><p class="text-regular text-red-400 font-medium mb-4">Error de conexión</p><button onclick="cargarDashboard()" class="px-4 py-2 bg-emerald-600 rounded-lg text-regular font-medium transition-all hover:bg-emerald-500 active:scale-95">Reintentar</button></div>`;
+      } finally {
+        loading.classList.add('hidden');
+        content.classList.remove('hidden');
       }
     }
 
     window.onload = () => {
-      initAmazingInterface('admin', 'dashboard');
+      if (typeof initAmazingInterface === 'function') initAmazingInterface('admin', 'dashboard');
       cargarDashboard();
     };
   </script>
+
+  <!-- Script del tema (elementos flotantes) -->
+  <script src="/theme.js"></script>
 </body>
+
 </html>
