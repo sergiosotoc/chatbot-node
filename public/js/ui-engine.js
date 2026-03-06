@@ -7,10 +7,9 @@ const NAV_CONFIG = {
     admin: {
         accent: "#10b981",
         links: [
-            { id: 'dashboard', label: 'Dashboard', href: '/admin/dashboard.html', icon: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z' },
-            { id: 'empresas',  label: 'Empresas',  href: '/admin/empresas.html',  icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5' },
-            { id: 'tarifas',   label: 'Tarifas',   href: '/admin/tarifas.html',   icon: 'M9 7h6m0 10v-3m-3 3h.01M9 17h.01' },
-            { id: 'logs',      label: 'Logs',      href: '/admin/logs.html',      icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5' }
+            { id: 'dashboard',  label: 'Dashboard',  href: '/admin/dashboard.html', icon: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z' },
+            { id: 'empresas',   label: 'Empresas',   href: '/admin/empresas.html',  icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5' },
+            { id: 'logs',       label: 'Soporte',    href: '/admin/logs.html',     icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' }
         ]
     },
     empresa: {

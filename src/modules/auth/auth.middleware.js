@@ -41,4 +41,12 @@ function requireUsuario(req, res, next) {
   next();
 }
 
-module.exports = { verifyJWT, requireAdmin, requireEmpresa, requireUsuario };
+/** Solo empresa o usuario; admin NO puede acceder (panel empresa separado). */
+function requireEmpresaPanel(req, res, next) {
+  if (!["empresa", "usuario"].includes(req.user?.role)) {
+    return res.status(403).json({ error: "Acceso denegado. Esta ruta es solo para empresas." });
+  }
+  next();
+}
+
+module.exports = { verifyJWT, requireAdmin, requireEmpresa, requireUsuario, requireEmpresaPanel };

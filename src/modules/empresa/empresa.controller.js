@@ -3,15 +3,25 @@
 const bcrypt = require("bcryptjs");
 const { supabase } = require("../../config/supabase");
 
-// Configuracion - usado desde /admin/empresa
+// Configuración - usado desde panel empresa para obtener su propia empresa
 async function getEmpresa(req, res) {
+  const empresaId = req.user?.empresa_id;
+
+  if (!empresaId) {
+    return res.status(403).json({
+      error: "Usuario sin empresa asociada. Este endpoint es para roles empresa o usuario.",
+    });
+  }
+
   const { data, error } = await supabase
     .from("empresas")
     .select("*")
-    .order("created_at", { ascending: true })
-    .limit(1)
+    .eq("id", empresaId)
     .single();
+
   if (error) return res.status(500).json({ error: error.message });
+  if (!data) return res.status(404).json({ error: "Empresa no encontrada" });
+
   res.json(data);
 }
 

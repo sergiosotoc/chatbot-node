@@ -2,19 +2,30 @@
 
 const { supabase } = require("../config/supabase");
 
-async function getClientes(req,res){
+function getEmpresaIdScope(req) {
+  if (req.user?.role === "admin") return null;
+  return req.user?.empresa_id || null;
+}
 
-  const {data,error}=await supabase
-  .from("clientes_whatsapp")
-  .select("*")
-  .order("created_at",{ascending:false});
+async function getClientes(req, res) {
+  const empresaId = getEmpresaIdScope(req);
 
-  if(error){
+  let query = supabase
+    .from("clientes_whatsapp")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (empresaId) {
+    query = query.eq("empresa_id", empresaId);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
     return res.status(500).json(error);
   }
 
-  res.json(data);
-
+  res.json(data || []);
 }
 
-module.exports={getClientes};
+module.exports = { getClientes };

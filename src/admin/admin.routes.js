@@ -1,4 +1,4 @@
-﻿/* src/admin/admin.routes.js */
+/* src/admin/admin.routes.js */
 
 const router = require("express").Router();
 
@@ -6,8 +6,12 @@ const {
   verifyJWT,
   requireAdmin,
   requireEmpresa,
-  requireUsuario
+  requireUsuario,
+  requireEmpresaPanel
 } = require("../modules/auth/auth.middleware");
+
+const empresasAdmin = require("./empresas.controller");
+const erroresAdmin = require("./errores.controller");
 
 // Controladores â€” rutas exactas segÃºn tu estructura real
 const adminCtrl  = require("./admin.controller");                         // src/admin/
@@ -23,30 +27,38 @@ router.use(verifyJWT);
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // DASHBOARD â€” solo admin
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-router.get("/dashboard",        requireAdmin,   adminCtrl.getDashboard);
+router.get("/dashboard", requireAdmin, adminCtrl.getDashboard);
+router.get("/empresas", requireAdmin, empresasAdmin.getEmpresasAdmin);
+router.post("/empresas", requireAdmin, empresasAdmin.crearEmpresaAdmin);
+router.put("/empresas/:id", requireAdmin, empresasAdmin.actualizarEmpresaAdmin);
+router.post("/empresas/:id/bloquear", requireAdmin, empresasAdmin.bloquearEmpresaAdmin);
+router.post("/empresas/:id/activar", requireAdmin, empresasAdmin.activarEmpresaAdmin);
+router.delete("/empresas/:id", requireAdmin, empresasAdmin.eliminarEmpresaAdmin);
+router.put("/empresas/:id/whatsapp", requireAdmin, empresasAdmin.configurarWhatsAppAdmin);
+router.get("/errores", requireAdmin, erroresAdmin.getErrores);
 
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // CHATS
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-router.get("/conversaciones",   requireEmpresa, chats.getConversaciones);
-router.get("/conversacion/:id", requireEmpresa, chats.getConversacion);
-router.post("/responder",       requireUsuario, chats.responder);
+router.get("/conversaciones",   requireEmpresaPanel, chats.getConversaciones);
+router.get("/conversacion/:id", requireEmpresaPanel, chats.getConversacion);
+router.post("/responder",       requireEmpresaPanel, chats.responder);
 
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // PEDIDOS
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-router.get("/pedidos",          requireEmpresa, pedidos.getPedidos);
-router.post("/enviar-guia",     requireEmpresa, pedidos.enviarGuia);
+router.get("/pedidos",          requireEmpresaPanel, pedidos.getPedidos);
+router.post("/enviar-guia",     requireEmpresaPanel, pedidos.enviarGuia);
 
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // CLIENTES
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-router.get("/clientes",         requireEmpresa, clientes.getClientes);
+router.get("/clientes",         requireEmpresaPanel, clientes.getClientes);
 
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // EMPRESA â€” configuraciÃ³n (empresa.controller)
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-router.get("/empresa",          requireEmpresa, empresa.getEmpresa);
+router.get("/empresa",          requireEmpresaPanel, empresa.getEmpresa);
 router.put("/empresa",          requireAdmin,   empresa.updateEmpresa);
 
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€

@@ -1,167 +1,134 @@
-﻿<!-- public/admin/logs.html -->
- 
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AHSE Admin | Logs</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AHSE | Soporte - Errores del Sistema</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-  <style>body{font-family:'DM Sans',sans-serif}.font-display{font-family:'Syne',sans-serif}::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#1e293b;border-radius:10px}@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}.fade-in{animation:fadeIn .4s ease forwards}.log-row:hover{background:rgba(30,41,59,0.3)}</style>
-  <link rel="stylesheet" href="/theme.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/main.css">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .status-pill { padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    .status-active { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .status-warning { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .status-info { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }
+  </style>
 </head>
-<body class="bg-[#060a10] text-slate-300 h-screen overflow-hidden flex">
-<div id="sidebarContainer" class="flex shrink-0"></div>
-
-<main class="flex-1 overflow-y-auto p-8 fade-in">
-  <div class="max-w-6xl mx-auto">
-    <header class="mb-8 flex items-center justify-between">
-      <div>
-        <h1 class="text-2xl font-display font-bold text-white">Logs del Sistema</h1>
-        <p class="text-slate-500 text-sm mt-1">Actividad reciente de pedidos y mensajes.</p>
-      </div>
-      <div class="flex items-center gap-3">
-        <select id="filtroEstatus" class="bg-slate-800 border border-slate-700 text-sm text-white rounded-xl px-4 py-2 outline-none focus:border-green-500 transition">
-          <option value="">Todos los estatus</option>
-          <option value="pendiente_pago">Pendiente pago</option>
-          <option value="guia_enviada">Guía enviada</option>
-          <option value="pendiente">Pendiente</option>
-          <option value="cancelado">Cancelado</option>
+<body class="flex">
+  <div id="sidebarContainer"></div>
+  <div class="main-viewport">
+    <div id="navbarContainer"></div>
+    <div class="content-padding">
+      <header class="mb-10 flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-extrabold tracking-tight text-white">Errores del Sistema</h1>
+          <p class="text-slate-400 text-sm mt-1">Logs para soporte técnico. Errores específicos para diagnóstico.</p>
+        </div>
+        <select id="filtroNivel" class="bg-white/5 border border-white/10 text-sm text-white rounded-xl px-4 py-2 outline-none focus:border-emerald-500 transition">
+          <option value="">Todos los niveles</option>
+          <option value="error">Error</option>
+          <option value="warning">Warning</option>
+          <option value="critical">Critical</option>
         </select>
-        <button id="btnExportar" class="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 text-white font-semibold px-4 py-2 rounded-xl transition text-sm">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-          Exportar CSV
-        </button>
-      </div>
-    </header>
+      </header>
 
-    <!-- Stats rápidas -->
-    <div class="grid grid-cols-4 gap-4 mb-8">
-      <div class="bg-[#0a0f1a] border border-slate-800/60 rounded-2xl p-4 text-center">
-        <p id="totalPedidos" class="text-2xl font-display font-bold text-white"> - </p>
-        <p class="text-xs text-slate-500 mt-1">Total pedidos</p>
-      </div>
-      <div class="bg-[#0a0f1a] border border-slate-800/60 rounded-2xl p-4 text-center">
-        <p id="totalMensajes" class="text-2xl font-display font-bold text-sky-400"> - </p>
-        <p class="text-xs text-slate-500 mt-1">Total mensajes</p>
-      </div>
-      <div class="bg-[#0a0f1a] border border-slate-800/60 rounded-2xl p-4 text-center">
-        <p id="totalClientes" class="text-2xl font-display font-bold text-green-400"> - </p>
-        <p class="text-xs text-slate-500 mt-1">Clientes WhatsApp</p>
-      </div>
-      <div class="bg-[#0a0f1a] border border-slate-800/60 rounded-2xl p-4 text-center">
-        <p id="totalGuias" class="text-2xl font-display font-bold text-amber-400"> - </p>
-        <p class="text-xs text-slate-500 mt-1">Guías enviadas</p>
-      </div>
-    </div>
+      <section class="mb-10">
+        <h2 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-6">Resumen</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="glass-card">
+            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Errores registrados</p>
+            <p id="totalErrores" class="font-mono text-3xl mt-2 text-white">-</p>
+          </div>
+          <div class="glass-card">
+            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Soporte</p>
+            <p class="font-mono text-2xl mt-2 text-emerald-400">Activo</p>
+          </div>
+        </div>
+      </section>
 
-    <!-- Tabla de actividad -->
-    <div class="bg-[#0a0f1a] border border-slate-800/60 rounded-2xl overflow-hidden">
-      <div class="p-5 border-b border-slate-800/60">
-        <h3 class="font-display font-semibold text-white">Registro de Pedidos</h3>
-      </div>
-      <div class="overflow-x-auto">
-        <table class="w-full text-left text-sm">
-          <thead class="bg-slate-900/40 text-slate-500 text-xs uppercase tracking-wider">
-            <tr>
-              <th class="px-5 py-3">Fecha</th>
-              <th class="px-5 py-3">Folio</th>
-              <th class="px-5 py-3">Cliente</th>
-              <th class="px-5 py-3">Servicio</th>
-              <th class="px-5 py-3">Precio</th>
-              <th class="px-5 py-3">Estatus</th>
-            </tr>
-          </thead>
-          <tbody id="tablaLogs" class="divide-y divide-slate-800/60"></tbody>
-        </table>
-      </div>
-      <div id="loadingLogs" class="p-8 text-center text-slate-500 text-sm">Cargando...</div>
+      <section>
+        <h2 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-4">Registro de errores</h2>
+        <div class="glass-card p-0 overflow-hidden">
+          <div class="px-6 py-4 border-b border-white/5">
+            <h3 class="font-bold text-white text-sm">Detalle técnico para identificar y resolver incidencias</h3>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+              <thead class="bg-white/5">
+                <tr class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                  <th class="px-6 py-4">Fecha</th>
+                  <th class="px-6 py-4">Nivel</th>
+                  <th class="px-6 py-4">Código</th>
+                  <th class="px-6 py-4">Mensaje</th>
+                  <th class="px-6 py-4">Detalle</th>
+                </tr>
+              </thead>
+              <tbody id="tablaErrores" class="divide-y divide-white/5"></tbody>
+            </table>
+          </div>
+          <div id="loadingErrores" class="p-8 text-center text-slate-500 text-sm">Cargando errores...</div>
+          <div id="sinErrores" class="hidden p-8 text-center text-slate-500 text-sm">Sin errores registrados. El sistema funciona correctamente.</div>
+        </div>
+      </section>
     </div>
   </div>
-</main>
 
-<script src="/auth.js"></script>
-<script src="/admin/sidebar.js"></script>
-<script>
-  if (!requireRole("admin")) throw new Error();
-  renderSidebar("/admin/logs.html");
-  const token = getToken();
-  let todosLosPedidos = [];
+  <script src="/auth.js"></script>
+  <script src="/js/ui-engine.js"></script>
+  <script>
+    if (typeof requireRole === 'function' && !requireRole('admin')) throw new Error();
+    window.onload = () => initAmazingInterface('admin', 'logs');
 
-  const STATUS_COLORS = {
-    pendiente_pago: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-    guia_enviada:   "bg-green-500/10 text-green-400 border-green-500/20",
-    pendiente:      "bg-amber-500/10 text-amber-400 border-amber-500/20",
-    cancelado:      "bg-red-500/10 text-red-400 border-red-500/20"
-  };
+    const token = getToken();
+    let todosLosErrores = [];
 
-  async function cargarLogs() {
-    try {
-      const [resPedidos, resMensajes, resClientes] = await Promise.all([
-        fetch("/admin/pedidos",        { headers: { Authorization: "Bearer " + token } }),
-        fetch("/admin/conversaciones", { headers: { Authorization: "Bearer " + token } }),
-        fetch("/admin/clientes",       { headers: { Authorization: "Bearer " + token } })
-      ]);
+    const NIVEL_COLORS = {
+      error: "status-warning",
+      warning: "status-info",
+      critical: "status-warning"
+    };
 
-      todosLosPedidos = await resPedidos.json();
-      const mensajes  = await resMensajes.json();
-      const clientes  = await resClientes.json();
-
-      document.getElementById("totalPedidos").textContent  = todosLosPedidos.length;
-      document.getElementById("totalMensajes").textContent = mensajes.length;
-      document.getElementById("totalClientes").textContent = clientes.length;
-      document.getElementById("totalGuias").textContent    = todosLosPedidos.filter(p => p.estatus === "guia_enviada").length;
-
-      renderTabla(todosLosPedidos);
-    } catch (err) {
-      document.getElementById("loadingLogs").textContent = "Error al cargar datos.";
+    async function cargarErrores() {
+      try {
+        const res = await fetch("/admin/errores", { headers: { Authorization: "Bearer " + token } });
+        todosLosErrores = await res.json();
+        document.getElementById("totalErrores").textContent = todosLosErrores.length;
+        document.getElementById("loadingErrores").classList.add("hidden");
+        renderTabla(todosLosErrores);
+      } catch (err) {
+        document.getElementById("loadingErrores").textContent = "Error al cargar errores.";
+      }
     }
-  }
 
-  function renderTabla(pedidos) {
-    document.getElementById("loadingLogs").classList.add("hidden");
-    const tbody = document.getElementById("tablaLogs");
-    if (!pedidos.length) {
-      tbody.innerHTML = `<tr><td colspan="6" class="px-5 py-8 text-center text-slate-500">Sin registros.</td></tr>`;
-      return;
+    function renderTabla(errores) {
+      const tbody = document.getElementById("tablaErrores");
+      const sinErrores = document.getElementById("sinErrores");
+      if (!errores.length) {
+        tbody.innerHTML = "";
+        sinErrores.classList.remove("hidden");
+        return;
+      }
+      sinErrores.classList.add("hidden");
+      tbody.innerHTML = errores.map(e => `
+        <tr class="hover:bg-white/[0.02]">
+          <td class="px-6 py-4 text-slate-400 text-xs font-mono">${new Date(e.created_at).toLocaleString("es-MX")}</td>
+          <td class="px-6 py-4">
+            <span class="status-pill ${NIVEL_COLORS[e.nivel] || 'status-warning'}">${e.nivel || "error"}</span>
+          </td>
+          <td class="px-6 py-4 font-mono text-slate-400 text-xs">${e.codigo || "-"}</td>
+          <td class="px-6 py-4 text-white max-w-md">${(e.mensaje || "-").substring(0, 120)}</td>
+          <td class="px-6 py-4 text-slate-500 text-xs max-w-xs truncate">${(e.detalle || "-").substring(0, 80)}</td>
+        </tr>
+      `).join("");
     }
-    tbody.innerHTML = pedidos.map(p => `
-      <tr class="log-row transition-colors">
-        <td class="px-5 py-3 text-slate-400 text-xs font-mono">${new Date(p.created_at).toLocaleString("es-MX")}</td>
-        <td class="px-5 py-3 font-mono text-green-400 font-medium text-xs">${p.folio || " - "}</td>
-        <td class="px-5 py-3 text-white">${p.telefono_cliente || p.cliente_whatsapp || " - "}</td>
-        <td class="px-5 py-3">${p.servicio || " - "}</td>
-        <td class="px-5 py-3 text-white font-medium">$${Number(p.precio || 0).toFixed(2)}</td>
-        <td class="px-5 py-3">
-          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase border ${STATUS_COLORS[p.estatus] || 'bg-slate-700 text-slate-300 border-slate-600'}">
-            ${p.estatus || " - "}
-          </span>
-        </td>
-      </tr>
-    `).join("");
-  }
 
-  document.getElementById("filtroEstatus").addEventListener("change", e => {
-    const val = e.target.value;
-    renderTabla(val ? todosLosPedidos.filter(p => p.estatus === val) : todosLosPedidos);
-  });
+    document.getElementById("filtroNivel").addEventListener("change", e => {
+      const val = e.target.value;
+      renderTabla(val ? todosLosErrores.filter(r => r.nivel === val) : todosLosErrores);
+    });
 
-  document.getElementById("btnExportar").addEventListener("click", () => {
-    const filtro = document.getElementById("filtroEstatus").value;
-    const datos  = filtro ? todosLosPedidos.filter(p => p.estatus === filtro) : todosLosPedidos;
-    const header = "Fecha,Folio,Cliente,Servicio,Precio,Estatus";
-    const rows   = datos.map(p => `"${new Date(p.created_at).toLocaleString("es-MX")}","${p.folio||""}","${p.telefono_cliente||p.cliente_whatsapp||""}","${p.servicio||""}","${Number(p.precio||0).toFixed(2)}","${p.estatus||""}"`);
-    const csv    = [header, ...rows].join("\n");
-    const blob   = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url    = URL.createObjectURL(blob);
-    const a      = document.createElement("a");
-    a.href = url; a.download = `pedidos_${new Date().toISOString().slice(0,10)}.csv`;
-    a.click(); URL.revokeObjectURL(url);
-  });
-
-  cargarLogs();
-</script>
-<script src="/theme.js"></script>
+    cargarErrores();
+  </script>
 </body>
 </html>
-

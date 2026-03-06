@@ -70,6 +70,16 @@ app.use((req, res) => {
 
 app.use((err, req, res, next) => {
   console.error("Error:", err);
+  try {
+    const { registrarError } = require("./services/error-logger.service");
+    registrarError({
+      nivel: "error",
+      codigo: "EXPRESS_ERROR",
+      mensaje: err.message || "Error interno",
+      detalle: err.stack,
+      contexto: { path: req.path, method: req.method },
+    }).catch(() => {});
+  } catch (_) {}
   res.status(500).json({ error: "Error interno del servidor" });
 });
 

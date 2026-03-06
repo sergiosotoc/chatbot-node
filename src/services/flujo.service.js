@@ -3,6 +3,7 @@
 const { cotizar } = require("./cotizador.service");
 const { guardarPedidoConfirmado, obtenerPedidosPorCliente } = require("../modules/pedidos/pedidos.repository");
 const { enviarTexto, reenviarImagenConCaption } = require("./whatsapp.service");
+const { obtenerCredencialesWhatsApp } = require("./empresa-whatsapp.service");
 
 const VEINTICUATRO_HORAS = 24 * 60 * 60 * 1000;
 const sesiones = new Map();
@@ -23,8 +24,13 @@ setInterval(() => {
 
 /**
  * Procesar mensaje principal
+ * @param {string} clienteId
+ * @param {string} mensaje
+ * @param {string} tipoMensaje
+ * @param {string|null} mediaId
+ * @param {string|null} empresaId - Para usar credenciales WhatsApp de la empresa
  */
-async function procesarMensaje(clienteId, mensaje, tipoMensaje = "text", mediaId = null) {
+async function procesarMensaje(clienteId, mensaje, tipoMensaje = "text", mediaId = null, empresaId = null) {
 
   try {
 
@@ -110,14 +116,14 @@ Selecciona una opción:
 Adjunto comprobante enviado por el cliente (${clienteId}):`;
 
         try {
-          // Enviamos primero toda la información en texto
-          await enviarTexto(numOperador, mensajeParaOperador);
-
-          // Luego enviamos la imagen
+          const creds = empresaId ? await obtenerCredencialesWhatsApp(empresaId) : null;
+          const opts = creds ? { phoneId: creds.phoneId, token: creds.token } : {};
+          await enviarTexto(numOperador, mensajeParaOperador, opts);
           await reenviarImagenConCaption(
             numOperador,
             mediaId,
-            `Comprobante Folio: ${sesion.folioPendiente}`
+            `Comprobante Folio: ${sesion.folioPendiente}`,
+            opts
           );
         } catch (error) {
           console.error("Error notificando al operador:", error.message);

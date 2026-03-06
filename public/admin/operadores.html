@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AHSE | Operadores</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/main.css">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .status-pill { padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    .status-active { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .status-warning { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+  </style>
+</head>
+<body class="flex">
+  <div id="sidebarContainer"></div>
+  <div class="main-viewport">
+    <div id="navbarContainer"></div>
+    <div class="content-padding">
+      <header class="mb-10">
+        <h1 class="text-3xl font-extrabold tracking-tight text-white">Operadores</h1>
+        <p class="text-slate-400 text-sm mt-1">Usuarios del sistema. Gestiona empleados desde cada empresa.</p>
+      </header>
+
+      <div class="glass-card p-0 overflow-hidden">
+        <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead class="bg-white/5">
+            <tr class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+            <tr>
+              <th class="px-6 py-4">Usuario</th>
+              <th class="px-6 py-4">Nombre</th>
+              <th class="px-6 py-4">Correo</th>
+              <th class="px-6 py-4">Empresa</th>
+              <th class="px-6 py-4">Rol</th>
+              <th class="px-6 py-4">Estado</th>
+            </tr>
+          </thead>
+          <tbody id="tablaOperadores" class="divide-y divide-white/5"></tbody>
+        </table>
+        </div>
+        <div id="loadingOperadores" class="p-8 text-center text-slate-500 text-sm">Cargando...</div>
+      </div>
+    </div>
+    </div>
+  </div>
+
+  <script src="/auth.js"></script>
+  <script src="/js/ui-engine.js"></script>
+  <script>
+    if (typeof requireRole === 'function' && !requireRole('admin')) throw new Error();
+
+    const token = getToken();
+
+    function rolLabel(r) {
+      const map = { admin: 'Admin', empresa: 'Empresa', usuario: 'Agente' };
+      return map[r] || r;
+    }
+
+    async function cargarOperadores() {
+      const res = await fetch('/admin/operadores', { headers: { Authorization: 'Bearer ' + token } });
+      const data = await res.json();
+      document.getElementById('loadingOperadores').classList.add('hidden');
+      const tbody = document.getElementById('tablaOperadores');
+      if (!Array.isArray(data) || data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-slate-500 text-sm">Sin operadores registrados.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = data.map(o => `
+        <tr class="hover:bg-white/[0.02]">
+          <td class="px-6 py-4 font-mono text-white">${o.username}</td>
+          <td class="px-6 py-4 text-slate-400">${o.nombre_completo || '-'}</td>
+          <td class="px-6 py-4 text-slate-400">${o.correo || '-'}</td>
+          <td class="px-6 py-4 text-slate-400">${o.empresa_nombre || '-'}</td>
+          <td class="px-6 py-4">
+            <span class="status-pill ${
+              o.rol === 'admin' ? 'bg-violet-500/10 text-violet-400 border-violet-500/20' :
+              o.rol === 'empresa' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+              'bg-sky-500/10 text-sky-400 border-sky-500/20'
+            }">${rolLabel(o.rol)}</span>
+          </td>
+          <td class="px-5 py-3">
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase border ${o.activo ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'}">
+              ${o.activo ? 'Activo' : 'Inactivo'}
+            </span>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    window.onload = () => {
+      initAmazingInterface('admin', 'empresas');
+      cargarOperadores();
+    };
+  </script>
+</body>
+</html>

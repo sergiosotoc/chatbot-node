@@ -1,34 +1,65 @@
 /* src/controllers/webhook.controller.js */
 
-const { supabase } = require("../config/supabase")
-const { procesarMensaje } = require("../services/flujo.service")
-const { enviarTexto } = require("../services/whatsapp.service")
+const { supabase } = require("../config/supabase");
+const { procesarMensaje } = require("../services/flujo.service");
+const { enviarTexto } = require("../services/whatsapp.service");
+const { obtenerCredencialesWhatsApp } = require("../services/empresa-whatsapp.service");
+
+/**
+ * Resuelve empresa_id a partir del webhook de Meta.
+ * 1. phone_number_id del payload → busca empresa por whatsapp_phone_id
+ * 2. Si no hay match, usa DEFAULT_EMPRESA_ID de .env (modo single-tenant)
+ */
+async function resolverEmpresaId(phoneNumberId) {
+    if (phoneNumberId) {
+        const { data: empresa } = await supabase
+            .from("empresas")
+            .select("id")
+            .eq("whatsapp_phone_id", phoneNumberId)
+            .eq("activo", true)
+            .single()
+        if (empresa) return empresa.id
+    }
+    return process.env.DEFAULT_EMPRESA_ID || null
+}
 
 async function handleWebhook(req, res) {
     res.sendStatus(200)
 
     try {
         const message = req.body?.entry?.[0]?.changes?.[0]?.value?.messages?.[0]
-        if (!messages) return
+        if (!message) return
 
         const telefono = message.from
+        const phoneNumberId = req.body?.entry?.[0]?.changes?.[0]?.value?.metadata?.phone_number_id
+        const empresaId = await resolverEmpresaId(phoneNumberId)
 
-        let { data: cliente } = await supabase
+        let query = supabase
             .from("clientes_whatsapp")
             .select("*")
             .eq("telefono", telefono)
-            .single()
+
+        if (empresaId) {
+            query = query.eq("empresa_id", empresaId)
+        } else {
+            query = query.is("empresa_id", null)
+        }
+
+        let { data: cliente } = await query.single()
 
         if (!cliente) {
-
             const { data } = await supabase
                 .from("clientes_whatsapp")
-                .insert({ telefono })
+                .insert({ telefono, empresa_id: empresaId })
                 .select()
                 .single()
-
             cliente = data
-
+        } else if (empresaId && !cliente.empresa_id) {
+            await supabase
+                .from("clientes_whatsapp")
+                .update({ empresa_id: empresaId })
+                .eq("id", cliente.id)
+            cliente = { ...cliente, empresa_id: empresaId }
         }
 
 
@@ -42,14 +73,14 @@ async function handleWebhook(req, res) {
             tipo: tipoMensaje,
             contenido: texto || "[imagen]"
         })
-        // 🔥 ejecutar flujo del bot
-        const respuesta = await procesarMensaje(cliente.id, texto, tipoMensaje, mediaId)
+        const respuesta = await procesarMensaje(cliente.id, texto, tipoMensaje, mediaId, empresaId);
 
         if (respuesta?.tipo === "texto") {
+          const creds = empresaId ? await obtenerCredencialesWhatsApp(empresaId) : null;
+          const opts = creds ? { phoneId: creds.phoneId, token: creds.token } : {};
+          await enviarTexto(telefono, respuesta.mensaje, opts);
 
-            await enviarTexto(telefono, respuesta.mensaje)
-
-            await supabase.from("mensajes").insert({
+          await supabase.from("mensajes").insert({
                 cliente_id: cliente.id,
                 direccion: "out",
                 tipo: "text",
