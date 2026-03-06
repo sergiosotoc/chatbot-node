@@ -5,11 +5,6 @@ const { procesarMensaje } = require("../services/flujo.service");
 const { enviarTexto } = require("../services/whatsapp.service");
 const { obtenerCredencialesWhatsApp } = require("../services/empresa-whatsapp.service");
 
-/**
- * Resuelve empresa_id a partir del webhook de Meta.
- * 1. phone_number_id del payload → busca empresa por whatsapp_phone_id
- * 2. Si no hay match, usa DEFAULT_EMPRESA_ID de .env (modo single-tenant)
- */
 async function resolverEmpresaId(phoneNumberId) {
     if (phoneNumberId) {
         const { data: empresa } = await supabase
@@ -24,11 +19,11 @@ async function resolverEmpresaId(phoneNumberId) {
 }
 
 async function handleWebhook(req, res) {
-    res.sendStatus(200)
-
     try {
         const message = req.body?.entry?.[0]?.changes?.[0]?.value?.messages?.[0]
-        if (!message) return
+        if (!message) {
+            return res.sendStatus(200)
+        }
 
         const telefono = message.from
         const phoneNumberId = req.body?.entry?.[0]?.changes?.[0]?.value?.metadata?.phone_number_id
@@ -89,10 +84,11 @@ async function handleWebhook(req, res) {
 
         }
 
-        res.sendStatus(200)
+        return res.sendStatus(200)
 
     } catch (error) {
         console.error("Webhook error:", error.message)
+        return res.sendStatus(200)
     }
 }
 

@@ -13,6 +13,12 @@ const { getConfig }  = require("./controllers/config.controller");
 
 const app = express();
 
+function guardarRawBody(req, res, buf) {
+  if (buf?.length) {
+    req.rawBody = buf;
+  }
+}
+
 app.set("trust proxy", 1);
 
 app.use(rateLimit({ windowMs: 60 * 1000, max: 100 }));
@@ -50,7 +56,7 @@ app.use(helmet({
 }));
 
 app.use(cors());
-app.use(express.json({ limit: "10mb" }));
+app.use(express.json({ limit: "10mb", verify: guardarRawBody }));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
